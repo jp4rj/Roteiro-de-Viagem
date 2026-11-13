@@ -90,6 +90,8 @@
     margin: 15px 0 8px; display: flex; align-items: center; gap: 8px;
   }
   .subtitulo::before { content: ''; width: 4px; height: 16px; background: #667eea; border-radius: 2px; }
+  .subtitulo.volta { color: #ef4444; }
+  .subtitulo.volta::before { background: #ef4444; }
 
   .timeline { position: relative; padding-left: 30px; margin-top: 15px; }
   .timeline::before {
@@ -115,6 +117,7 @@
   .timeline-evento.transporte { border-left-color: #f59e0b; }
   .timeline-evento.hotel { border-left-color: #10b981; }
   .timeline-evento.local { border-left-color: #667eea; }
+  .timeline-evento.volta { border-left-color: #ef4444; }
 
   .orcamento-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -153,7 +156,6 @@
   }
   .topbar h1 { color: white; margin: 0; font-size: 1.8em; }
 
-  /* ========== CARD DA VIAGEM (com foto de capa) ========== */
   .viagem-card {
     background: white;
     border-radius: 12px;
@@ -209,8 +211,6 @@
     padding: 2px 6px;
     border-radius: 4px;
   }
-
-  /* Fallback: gradiente + iniciais */
   .viagem-card .capa.vazia {
     align-items: flex-end;
     background: linear-gradient(135deg, var(--g1, #667eea), var(--g2, #764ba2));
@@ -243,7 +243,6 @@
     text-shadow: 0 1px 3px rgba(0,0,0,0.4);
     z-index: 1;
   }
-
   .viagem-card .corpo { padding: 16px; }
   .viagem-card .meta {
     font-size: 0.88em;
@@ -331,7 +330,7 @@
 
   <div class="card">
     <h2>🏙️ Cidades da Viagem <span class="badge" id="badgeCidades">0</span></h2>
-    <p style="font-size:0.85em;color:#888;margin-bottom:10px;">💡 Arraste o ícone <strong>⋮⋮</strong> para reordenar. A 1ª cidade com foto vira capa do card na lista.</p>
+    <p style="font-size:0.85em;color:#888;margin-bottom:10px;">💡 Arraste o ícone <strong>⋮⋮</strong> para reordenar. A 1ª cidade com foto vira capa do card na lista. A última cidade recebe o bloco de volta para casa.</p>
     <div class="grid">
       <div><label>Nome da cidade</label><input id="cidade_nome" placeholder="Ex: Lisboa"></div>
       <div><label>Chegada</label><input id="cidade_chegada" type="date"></div>
@@ -435,23 +434,13 @@ async function buscarFotoCidade(nomeCidade) {
   return null;
 }
 
-// Paleta de gradientes para cidades sem foto
 const GRADIENTES = [
-  ['#667eea', '#764ba2'], // roxo/azul
-  ['#f093fb', '#f5576c'], // rosa/vermelho
-  ['#4facfe', '#00f2fe'], // azul/ciano
-  ['#fa709a', '#fee140'], // rosa/amarelo
-  ['#30cfd0', '#330867'], // ciano/roxo escuro
-  ['#a8edea', '#fed6e3'], // verde claro/rosa claro
-  ['#ff9a9e', '#fecfef'], // pêssego/rosa
-  ['#ff6a00', '#ee0979'], // laranja/magenta
-  ['#43e97b', '#38f9d7'], // verde/ciano
-  ['#5ee7df', '#b490ca'], // turquesa/lavanda
-  ['#f6d365', '#fda085'], // amarelo/coral
-  ['#84fab0', '#8fd3f4']  // menta/azul claro
+  ['#667eea', '#764ba2'], ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'],
+  ['#fa709a', '#fee140'], ['#30cfd0', '#330867'], ['#a8edea', '#fed6e3'],
+  ['#ff9a9e', '#fecfef'], ['#ff6a00', '#ee0979'], ['#43e97b', '#38f9d7'],
+  ['#5ee7df', '#b490ca'], ['#f6d365', '#fda085'], ['#84fab0', '#8fd3f4']
 ];
 
-// Hash determinístico (mesma cidade = mesmo gradiente)
 function hashNome(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) {
@@ -461,7 +450,6 @@ function hashNome(str) {
   return Math.abs(h);
 }
 
-// Iniciais: "Lisboa" → "LI", "Nova York" → "NY", "São Paulo" → "SP"
 function iniciais(nome) {
   const partes = nome.trim().split(/\s+/).filter(p => p.length > 2);
   if (partes.length === 0) return nome.slice(0, 2).toUpperCase();
@@ -469,12 +457,10 @@ function iniciais(nome) {
   return (partes[0][0] + partes[1][0]).toUpperCase();
 }
 
-// ===================== FOTO DE CAPA (cascata entre cidades) =====================
 async function aplicarFotoCapa(el, listaCidades, nomeViagem) {
   if (!el) return;
   const titulo = el.querySelector('.titulo-capa');
 
-  // Tenta cada cidade na ordem até achar uma com foto
   let res = null;
   let cidadeUsada = null;
   for (const cidade of listaCidades) {
@@ -488,7 +474,6 @@ async function aplicarFotoCapa(el, listaCidades, nomeViagem) {
   }
 
   if (res && res.url) {
-    // ✅ Achou foto em alguma cidade
     el.style.backgroundImage = `url('${res.url}')`;
     el.classList.remove('vazia');
     el.innerHTML = '';
@@ -498,21 +483,17 @@ async function aplicarFotoCapa(el, listaCidades, nomeViagem) {
     credito.textContent = '📷 ' + cidadeUsada;
     el.appendChild(credito);
   } else {
-    // 🎨 Nenhuma cidade tem foto → fallback com gradiente + iniciais
     el.classList.add('vazia');
     el.innerHTML = '';
-
     const referencia = (listaCidades[0] || nomeViagem || '?').trim();
     const idx = hashNome(referencia.toLowerCase()) % GRADIENTES.length;
     el.style.setProperty('--g1', GRADIENTES[idx][0]);
     el.style.setProperty('--g2', GRADIENTES[idx][1]);
     el.style.backgroundImage = '';
-
     const avatar = document.createElement('div');
     avatar.className = 'avatar-cidade';
     avatar.textContent = iniciais(referencia);
     el.appendChild(avatar);
-
     if (titulo) el.appendChild(titulo);
   }
 }
@@ -567,14 +548,12 @@ function renderLista() {
       </div>`;
   }).join('');
 
-  // Dispara busca de fotos em paralelo (não bloqueia o render)
   ids.forEach(id => {
     const v = store.viagens[id];
     const d = v.dados || {};
     const nomesCidades = (d.cidades || [])
       .map(c => (c.nome || '').trim())
       .filter(Boolean);
-    // fallback final: usa o destino ou o nome da viagem
     if (nomesCidades.length === 0) {
       const extra = (d.destino || v.nome || '').trim();
       if (extra) nomesCidades.push(extra);
@@ -622,6 +601,19 @@ function abrirViagem(id) {
   store.atual = id;
   persistirStore();
   estado = JSON.parse(JSON.stringify(store.viagens[id].dados));
+  // normaliza cidades antigas
+  estado.cidades = (estado.cidades || []).map(c => ({
+    nome: c.nome || '',
+    chegada: c.chegada || '',
+    saida: c.saida || '',
+    transporte: c.transporte || [],
+    hotel: c.hotel || [],
+    locais: c.locais || [],
+    conexao: c.conexao || null,
+    volta: c.volta || null,
+    _rascunhoTransp: null,
+    _rascunhoVolta: null
+  }));
   carregarEstadoNoForm();
   document.getElementById('telaLista').style.display = 'none';
   document.getElementById('telaEditor').style.display = 'block';
@@ -638,6 +630,13 @@ function duplicarViagem(id) {
   copia.id = novoId;
   copia.nome = orig.nome + ' (cópia)';
   copia.criadaEm = new Date().toISOString();
+  // limpa rascunhos
+  if (copia.dados && copia.dados.cidades) {
+    copia.dados.cidades.forEach(c => {
+      c._rascunhoTransp = null;
+      c._rascunhoVolta = null;
+    });
+  }
   store.viagens[novoId] = copia;
   persistirStore();
   renderLista();
@@ -665,7 +664,14 @@ function salvarViagemAtual(silencioso) {
   estado.orcamento.passeios = parseFloat(document.getElementById('orc_passeios').value) || 0;
   estado.orcamento.extras = parseFloat(document.getElementById('orc_extras').value) || 0;
 
-  store.viagens[store.atual].dados = JSON.parse(JSON.stringify(estado));
+  // limpa rascunhos antes de salvar
+  const limpo = JSON.parse(JSON.stringify(estado));
+  (limpo.cidades || []).forEach(c => {
+    delete c._rascunhoTransp;
+    delete c._rascunhoVolta;
+  });
+
+  store.viagens[store.atual].dados = limpo;
   if (estado.destino) {
     store.viagens[store.atual].nome = estado.destino;
     document.getElementById('tituloEditor').textContent = estado.destino;
@@ -686,23 +692,59 @@ function carregarEstadoNoForm() {
   document.getElementById('orc_extras').value = estado.orcamento?.extras ?? 300;
 }
 
+// ===================== RASCUNHOS (evitam "herança" de transporte) =====================
+function salvarRascunhos() {
+  if (!estado) return;
+  estado.cidades.forEach((c, i) => {
+    const elT = document.getElementById(`transp_empresa_${i}`);
+    if (elT) {
+      c._rascunhoTransp = {
+        tipo: document.getElementById(`transp_tipo_${i}`)?.value || 'Avião',
+        empresa: document.getElementById(`transp_empresa_${i}`)?.value || '',
+        ida: document.getElementById(`transp_ida_${i}`)?.value || '',
+        volta: document.getElementById(`transp_volta_${i}`)?.value || '',
+        custo: document.getElementById(`transp_custo_${i}`)?.value || ''
+      };
+    }
+    const elV = document.getElementById(`volta_empresa_${i}`);
+    if (elV) {
+      c._rascunhoVolta = {
+        tipo: document.getElementById(`volta_tipo_${i}`)?.value || 'Avião',
+        empresa: document.getElementById(`volta_empresa_${i}`)?.value || '',
+        data: document.getElementById(`volta_data_${i}`)?.value || '',
+        custo: document.getElementById(`volta_custo_${i}`)?.value || ''
+      };
+    }
+  });
+}
+
 // ===================== EDIÇÃO =====================
 function addCidade() {
   const nome = document.getElementById('cidade_nome').value.trim();
   const chegada = document.getElementById('cidade_chegada').value;
   const saida = document.getElementById('cidade_saida').value;
   if (!nome) return alert('Informe o nome da cidade.');
-  estado.cidades.push({ nome, chegada, saida, transporte: [], hotel: [], locais: [], conexao: null });
+  salvarRascunhos();
+  estado.cidades.push({
+    nome, chegada, saida,
+    transporte: [], hotel: [], locais: [],
+    conexao: null, volta: null,
+    _rascunhoTransp: null, _rascunhoVolta: null
+  });
   document.getElementById('cidade_nome').value = '';
   document.getElementById('cidade_chegada').value = '';
   document.getElementById('cidade_saida').value = '';
   render();
 }
 function removerCidade(idx) {
-  if (confirm('Remover cidade e tudo dentro dela?')) { estado.cidades.splice(idx, 1); render(); }
+  if (!confirm('Remover cidade e tudo dentro dela?')) return;
+  salvarRascunhos();
+  estado.cidades.splice(idx, 1);
+  render();
 }
 function moverCidade(from, to) {
   if (from === to) return;
+  salvarRascunhos();
   const item = estado.cidades.splice(from, 1)[0];
   estado.cidades.splice(to, 0, item);
   render();
@@ -713,8 +755,19 @@ function addTransporte(cIdx) {
   const ida = document.getElementById(`transp_ida_${cIdx}`).value.trim();
   const volta = document.getElementById(`transp_volta_${cIdx}`).value.trim();
   const custo = parseFloat(document.getElementById(`transp_custo_${cIdx}`).value) || 0;
-  if (!empresa && !ida) return alert('Preencha empresa ou ida.');
+  if (!empresa && !ida) return alert('Preencha empresa ou data de ida.');
   estado.cidades[cIdx].transporte.push({ tipo, empresa, ida, volta, custo });
+  estado.cidades[cIdx]._rascunhoTransp = null;
+  render();
+}
+function addVolta(cIdx) {
+  const tipo = document.getElementById(`volta_tipo_${cIdx}`).value;
+  const empresa = document.getElementById(`volta_empresa_${cIdx}`).value.trim();
+  const data = document.getElementById(`volta_data_${cIdx}`).value.trim();
+  const custo = parseFloat(document.getElementById(`volta_custo_${cIdx}`).value) || 0;
+  if (!empresa && !data) return alert('Preencha empresa ou data de volta.');
+  estado.cidades[cIdx].volta = { tipo, empresa, data, custo };
+  estado.cidades[cIdx]._rascunhoVolta = null;
   render();
 }
 function addHotel(cIdx) {
@@ -724,6 +777,7 @@ function addHotel(cIdx) {
   const checkout = document.getElementById(`hotel_out_${cIdx}`).value;
   const custo = parseFloat(document.getElementById(`hotel_custo_${cIdx}`).value) || 0;
   if (!nome) return alert('Informe o nome do hotel.');
+  salvarRascunhos();
   estado.cidades[cIdx].hotel.push({ nome, end, checkin, checkout, custo });
   render();
 }
@@ -733,10 +787,19 @@ function addLocal(cIdx) {
   const hora = document.getElementById(`local_hora_${cIdx}`).value.trim();
   const cat = document.getElementById(`local_cat_${cIdx}`).value;
   if (!nome) return alert('Informe o nome do local.');
+  salvarRascunhos();
   estado.cidades[cIdx].locais.push({ nome, data, hora, cat });
   render();
 }
-function remover(cIdx, tipo, i) { estado.cidades[cIdx][tipo].splice(i, 1); render(); }
+function remover(cIdx, tipo, i) {
+  salvarRascunhos();
+  if (tipo === 'volta') {
+    estado.cidades[cIdx].volta = null;
+  } else {
+    estado.cidades[cIdx][tipo].splice(i, 1);
+  }
+  render();
+}
 function setConexao(cIdx) {
   const tipo = document.getElementById(`conexao_tipo_${cIdx}`).value;
   const custo = parseFloat(document.getElementById(`conexao_custo_${cIdx}`).value) || 0;
@@ -804,6 +867,7 @@ function toggleBagagem(i) { estado.bagagem[i].done = !estado.bagagem[i].done; re
 
 // ===================== RENDER =====================
 function render() {
+  salvarRascunhos();
   renderCidades();
   renderTimeline();
   renderBagagem();
@@ -820,9 +884,14 @@ function renderCidades() {
     box.innerHTML = '<div class="empty">Nenhuma cidade adicionada</div>';
     return;
   }
+
+  const ultimoIdx = estado.cidades.length - 1;
+
   box.innerHTML = estado.cidades.map((c, cIdx) => {
     const diasCidade = (c.chegada && c.saida)
       ? Math.max(1, Math.ceil((new Date(c.saida) - new Date(c.chegada)) / 86400000) + 1) : '—';
+    const isUltima = cIdx === ultimoIdx;
+
     const conexaoHtml = cIdx > 0 ? `
       <div class="conexao">
         ⬇️ Conexão: ${estado.cidades[cIdx-1].nome} → ${c.nome}
@@ -835,6 +904,10 @@ function renderCidades() {
           <div><button class="small" onclick="setConexao(${cIdx})">Definir conexão</button></div>
         </div>
       </div>` : '';
+
+    const rT = c._rascunhoTransp || {};
+    const rV = c._rascunhoVolta || {};
+
     return `
     ${conexaoHtml}
     <div class="cidade-card" draggable="true"
@@ -849,19 +922,21 @@ function renderCidades() {
         <button class="danger" onclick="removerCidade(${cIdx})">Remover</button>
       </div>
 
-      <div class="subtitulo">🚗 Transporte</div>
+      <!-- CHEGADA -->
+      <div class="subtitulo">🛫 Chegada em ${c.nome}</div>
       <div class="grid">
         <div><label>Tipo</label><select id="transp_tipo_${cIdx}">
-          <option>Avião</option><option>Trem</option><option>Ônibus</option><option>Carro</option><option>Barco</option>
+          ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
+            `<option ${rT.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
         </select></div>
-        <div><label>Empresa</label><input id="transp_empresa_${cIdx}" placeholder="Ex: TAP"></div>
-        <div><label>Ida</label><input id="transp_ida_${cIdx}" placeholder="Ex: 10/05 08:30"></div>
-        <div><label>Volta</label><input id="transp_volta_${cIdx}" placeholder="Ex: 15/05 18:00"></div>
-        <div><label>Custo (R$)</label><input id="transp_custo_${cIdx}" type="number" placeholder="0"></div>
+        <div><label>Empresa</label><input id="transp_empresa_${cIdx}" placeholder="Ex: TAP" value="${escapeHtml(rT.empresa || '')}"></div>
+        <div><label>Data/hora de ida</label><input id="transp_ida_${cIdx}" placeholder="Ex: 10/05 08:30" value="${escapeHtml(rT.ida || '')}"></div>
+        <div><label>Data/hora de retorno (se houver)</label><input id="transp_volta_${cIdx}" placeholder="Ex: 15/05 18:00" value="${escapeHtml(rT.volta || '')}"></div>
+        <div><label>Custo (R$)</label><input id="transp_custo_${cIdx}" type="number" placeholder="0" value="${rT.custo || ''}"></div>
       </div>
-      <div class="actions"><button class="small" onclick="addTransporte(${cIdx})">+ Transporte</button></div>
+      <div class="actions"><button class="small" onclick="addTransporte(${cIdx})">+ Adicionar Chegada</button></div>
       <div style="margin-top:10px;">
-        ${c.transporte.length === 0 ? '<div class="empty">Sem transporte</div>' :
+        ${c.transporte.length === 0 ? '<div class="empty">Sem transporte de chegada</div>' :
           c.transporte.map((t, i) => `
             <div class="item-row">
               <div class="item-info">
@@ -872,6 +947,31 @@ function renderCidades() {
             </div>`).join('')}
       </div>
 
+      ${isUltima ? `
+      <div class="subtitulo volta">🛬 Volta para casa (de ${c.nome})</div>
+      <div class="grid">
+        <div><label>Tipo</label><select id="volta_tipo_${cIdx}">
+          ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
+            `<option ${(rV.tipo || c.volta?.tipo) === t ? 'selected' : ''}>${t}</option>`).join('')}
+        </select></div>
+        <div><label>Empresa</label><input id="volta_empresa_${cIdx}" placeholder="Ex: TAP" value="${escapeHtml(rV.empresa || c.volta?.empresa || '')}"></div>
+        <div><label>Data/hora de volta</label><input id="volta_data_${cIdx}" placeholder="Ex: 20/05 18:00" value="${escapeHtml(rV.data || c.volta?.data || '')}"></div>
+        <div><label>Custo (R$)</label><input id="volta_custo_${cIdx}" type="number" placeholder="0" value="${rV.custo || c.volta?.custo || ''}"></div>
+      </div>
+      <div class="actions"><button class="small" style="background:#ef4444;" onclick="addVolta(${cIdx})">+ Salvar Volta</button></div>
+      <div style="margin-top:10px;">
+        ${!c.volta ? '<div class="empty">Sem transporte de volta</div>' :
+          `<div class="item-row" style="border-left:3px solid #ef4444;">
+            <div class="item-info">
+              <div class="item-title">${c.volta.tipo} - ${c.volta.empresa || '—'} <span class="badge cinza">VOLTA</span></div>
+              <div class="item-detail">Data: ${c.volta.data || '—'} | R$ ${c.volta.custo.toFixed(2)}</div>
+            </div>
+            <button class="danger" onclick="remover(${cIdx}, 'volta')">x</button>
+          </div>`}
+      </div>
+      ` : ''}
+
+      <!-- HOTEL -->
       <div class="subtitulo">🏨 Hospedagem</div>
       <div class="grid">
         <div><label>Nome</label><input id="hotel_nome_${cIdx}" placeholder="Ex: Hotel Central"></div>
@@ -893,6 +993,7 @@ function renderCidades() {
             </div>`).join('')}
       </div>
 
+      <!-- LOCAIS -->
       <div class="subtitulo">📍 Locais</div>
       <div class="grid">
         <div><label>Local</label><input id="local_nome_${cIdx}" placeholder="Ex: Torre de Belém"></div>
@@ -930,7 +1031,7 @@ function renderTimeline() {
       if (t.ida) {
         const [dataStr, hora] = t.ida.split(' ');
         eventos.push({ data: dataStr, hora: hora || '', tipo: 'transporte',
-          titulo: `${t.tipo} ${t.empresa || ''}`, sub: `Ida • ${c.nome}` });
+          titulo: `🛫 ${t.tipo} ${t.empresa || ''}`, sub: `Chegada em ${c.nome}` });
       }
     });
     c.hotel.forEach(h => {
@@ -941,6 +1042,14 @@ function renderTimeline() {
       if (l.data) eventos.push({ data: l.data, hora: l.hora || '', tipo: 'local',
         titulo: l.nome, sub: `${c.nome} • ${l.cat}` });
     });
+    if (c.volta && c.volta.data) {
+      const [dataStr, hora] = c.volta.data.split(' ');
+      eventos.push({
+        data: dataStr, hora: hora || '', tipo: 'volta',
+        titulo: `🛬 Volta para casa — ${c.volta.tipo} ${c.volta.empresa || ''}`,
+        sub: `De ${c.nome}`
+      });
+    }
   });
   if (eventos.length === 0) {
     box.innerHTML = '<div class="empty">Adicione datas aos locais/transportes</div>';
@@ -993,7 +1102,7 @@ function renderOrcamento() {
   const pas = parseFloat(document.getElementById('orc_passeios').value) || 0;
   const ext = parseFloat(document.getElementById('orc_extras').value) || 0;
   const dias = Math.max(1, parseInt(document.getElementById('dias').value) || 1);
-  let cT = 0, cH = 0, cC = 0;
+  let cT = 0, cH = 0, cC = 0, cVolta = 0;
   estado.cidades.forEach(c => {
     cT += c.transporte.reduce((s, t) => s + t.custo, 0);
     cH += c.hotel.reduce((s, h) => {
@@ -1004,11 +1113,12 @@ function renderOrcamento() {
       return s + h.custo;
     }, 0);
     if (c.conexao) cC += c.conexao.custo;
+    if (c.volta) cVolta += c.volta.custo;
   });
   const tAlim = alim * dias;
-  const total = cT + cH + cC + tAlim + pas + ext;
+  const total = cT + cH + cC + cVolta + tAlim + pas + ext;
   document.getElementById('orcamento').innerHTML = `
-    <div class="orcamento-item transporte"><div class="label">🚗 Transporte</div><div class="valor">R$ ${(cT + cC).toFixed(2)}</div></div>
+    <div class="orcamento-item transporte"><div class="label">🚗 Transporte</div><div class="valor">R$ ${(cT + cC + cVolta).toFixed(2)}</div></div>
     <div class="orcamento-item hotel"><div class="label">🏨 Hotel</div><div class="valor">R$ ${cH.toFixed(2)}</div></div>
     <div class="orcamento-item alimentacao"><div class="label">🍽️ Alimentação (${dias}d)</div><div class="valor">R$ ${tAlim.toFixed(2)}</div></div>
     <div class="orcamento-item passeios"><div class="label">🎟️ Passeios</div><div class="valor">R$ ${pas.toFixed(2)}</div></div>
@@ -1018,7 +1128,7 @@ function renderOrcamento() {
 }
 
 let dragIdx = null;
-function onDragStart(e, idx) { dragIdx = idx; e.currentTarget.classList.add('dragging'); }
+function onDragStart(e, idx) { salvarRascunhos(); dragIdx = idx; e.currentTarget.classList.add('dragging'); }
 function onDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
 function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 function onDrop(e, idx) {
@@ -1044,6 +1154,7 @@ async function exportarPDF() {
   pdf.text(`${ida || '?'} → ${volta || '?'}`, margin, 27);
   y = 45; pdf.setTextColor(0, 0, 0);
   const checkPage = (need = 10) => { if (y + need > pageH - margin) { pdf.addPage(); y = margin; } };
+
   for (let i = 0; i < estado.cidades.length; i++) {
     const c = estado.cidades[i];
     checkPage(40);
@@ -1051,14 +1162,16 @@ async function exportarPDF() {
     pdf.setFontSize(13); pdf.setFont(undefined, 'bold'); pdf.setTextColor(118, 75, 162);
     pdf.text(`${i+1}. ${c.nome}  (${c.chegada || '?'} → ${c.saida || '?'})`, margin + 3, y + 6);
     y += 14; pdf.setTextColor(0, 0, 0);
+
     if (i > 0 && c.conexao) {
       checkPage(6); pdf.setFontSize(9); pdf.setFont(undefined, 'italic');
       pdf.text(`  ↳ Conexão: ${estado.cidades[i-1].nome} → ${c.nome} (${c.conexao.tipo}, R$ ${c.conexao.custo.toFixed(2)})`, margin + 3, y);
       y += 6;
     }
+
     if (c.transporte.length) {
       checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
-      pdf.text('Transporte:', margin + 3, y); y += 5;
+      pdf.text('Chegada:', margin + 3, y); y += 5;
       pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
       c.transporte.forEach(t => {
         checkPage(5);
@@ -1066,6 +1179,7 @@ async function exportarPDF() {
         y += 5;
       });
     }
+
     if (c.hotel.length) {
       checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
       pdf.text('Hospedagem:', margin + 3, y); y += 5;
@@ -1076,6 +1190,7 @@ async function exportarPDF() {
         y += 5;
       });
     }
+
     if (c.locais.length) {
       checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
       pdf.text('Locais:', margin + 3, y); y += 5;
@@ -1086,8 +1201,19 @@ async function exportarPDF() {
         y += 5;
       });
     }
+
+    if (c.volta) {
+      checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
+      pdf.setTextColor(239, 68, 68);
+      pdf.text('Volta para casa:', margin + 3, y); y += 5;
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
+      pdf.text(`  • ${c.volta.tipo} ${c.volta.empresa || ''} | ${c.volta.data || '—'} | R$ ${c.volta.custo.toFixed(2)}`, margin + 5, y);
+      y += 5;
+    }
     y += 5;
   }
+
   checkPage(30);
   pdf.setFillColor(240, 244, 255); pdf.rect(margin, y, pageW - 2*margin, 9, 'F');
   pdf.setFontSize(13); pdf.setFont(undefined, 'bold'); pdf.setTextColor(118, 75, 162);
@@ -1098,7 +1224,7 @@ async function exportarPDF() {
   const pas = parseFloat(document.getElementById('orc_passeios').value) || 0;
   const ext = parseFloat(document.getElementById('orc_extras').value) || 0;
   const dias = Math.max(1, parseInt(document.getElementById('dias').value) || 1);
-  let cT = 0, cH = 0, cC = 0;
+  let cT = 0, cH = 0, cC = 0, cVolta = 0;
   estado.cidades.forEach(c => {
     cT += c.transporte.reduce((s,t)=>s+t.custo,0);
     cH += c.hotel.reduce((s,h)=>{
@@ -1109,10 +1235,11 @@ async function exportarPDF() {
       return s + h.custo;
     },0);
     if (c.conexao) cC += c.conexao.custo;
+    if (c.volta) cVolta += c.volta.custo;
   });
   const tAlim = alim * dias;
-  const total = cT + cH + cC + tAlim + pas + ext;
-  [['Transporte', cT + cC], ['Hotel', cH], [`Alimentação (${dias} dias)`, tAlim], ['Passeios', pas], ['Extras', ext], ['TOTAL', total]]
+  const total = cT + cH + cC + cVolta + tAlim + pas + ext;
+  [['Transporte', cT + cC + cVolta], ['Hotel', cH], [`Alimentação (${dias} dias)`, tAlim], ['Passeios', pas], ['Extras', ext], ['TOTAL', total]]
     .forEach(([n, v], idx, arr) => {
       checkPage(6);
       pdf.setFont(undefined, idx === arr.length - 1 ? 'bold' : 'normal');
@@ -1122,7 +1249,7 @@ async function exportarPDF() {
   pdf.save(`viagem-${destino.replace(/\s+/g, '-').toLowerCase()}.pdf`);
 }
 
-function atualizarTudo() { gerarBagagem(); render(); }
+function atualizarTudo() { salvarRascunhos(); gerarBagagem(); render(); }
 
 document.getElementById('dataIda').addEventListener('change', calcDias);
 document.getElementById('dataVolta').addEventListener('change', calcDias);
