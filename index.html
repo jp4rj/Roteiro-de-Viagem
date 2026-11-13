@@ -66,6 +66,7 @@
     display: flex; justify-content: space-between; align-items: center;
   }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
   label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 4px; color: var(--text-secondary); }
   input, select, textarea {
     width: 100%; padding: 8px 10px; border: 1px solid var(--border);
@@ -213,7 +214,6 @@
   .topbar h1 { color: white; margin: 0; font-size: 1.8em; }
   .topbar-acoes { display: flex; gap: 8px; flex-wrap: wrap; }
 
-  /* ===== BOTÃO DE TEMA ===== */
   .btn-tema {
     position: fixed;
     top: 20px;
@@ -270,7 +270,6 @@
     color: white;
   }
 
-  /* MODO VISUALIZAÇÃO */
   .modo-view .form-add,
   .modo-view .btn-add,
   .modo-view .btn-del,
@@ -371,6 +370,7 @@
     .viagem-card .capa .titulo-capa { font-size: 1em; }
     .topbar { padding-right: 70px; }
     .topbar h1 { font-size: 1.3em; }
+    .grid-2 { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -730,6 +730,27 @@ async function aplicarFotoCapa(el, listaCidades, nomeViagem) {
   }
 }
 
+// ===================== FORMATAÇÃO DE DATAS =====================
+function formatarData(iso) {
+  if (!iso) return '—';
+  if (typeof iso !== 'string') return String(iso);
+  if (iso.includes('/')) return iso;
+  const partes = iso.split('-');
+  if (partes.length !== 3) return iso;
+  const [y, m, d] = partes;
+  return `${d}/${m}/${y}`;
+}
+function formatarDataHora(data, hora) {
+  if (!data && !hora) return '—';
+  const dataFmt = data ? formatarData(data) : '';
+  const horaFmt = hora || '';
+  if (dataFmt && horaFmt) return `${dataFmt} ${horaFmt}`;
+  return dataFmt || horaFmt || '—';
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 // ===================== LISTA DE VIAGENS =====================
 function mostrarLista() {
   document.getElementById('telaLista').style.display = 'block';
@@ -799,15 +820,6 @@ function renderLista() {
   });
 }
 
-function formatarData(iso) {
-  if (!iso) return '?';
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
 // ===================== CRUD DE VIAGENS =====================
 function novaViagem() {
   const nome = prompt('Nome da nova viagem:', 'Minha Viagem');
@@ -839,20 +851,16 @@ function abrirViagem(id, forcarEdicao) {
       nome: c.nome || '',
       chegada: c.chegada || '',
       saida: c.saida || '',
-      transporte: c.transporte || [],
-      conexao: c.conexao || null,
+      transporte: (c.transporte || []).map(t => normalizarTransporte(t)),
+      conexao: c.conexao ? normalizarTransporte(c.conexao) : null,
       hotel: c.hotel || [],
       locais: c.locais || [],
-      volta: c.volta || null,
+      volta: c.volta ? normalizarTransporte(c.volta) : null,
       _rascunhoChegada: null,
       _rascunhoConexao: null,
       _rascunhoVolta: null,
       _editando: null
     };
-    if (nova.conexao && !nova.conexao.data) nova.conexao.data = '';
-    if (nova.conexao && !nova.conexao.empresa) nova.conexao.empresa = '';
-    if (nova.conexao && !nova.conexao.voucher) nova.conexao.voucher = '';
-    if (nova.conexao && !nova.conexao.obs) nova.conexao.obs = '';
     return nova;
   });
   estado._editando = null;
@@ -868,6 +876,29 @@ function abrirViagem(id, forcarEdicao) {
     gerarBagagem();
     if (!modoEdicao) salvarViagemAtual(true);
   }
+}
+
+// Migra dados antigos: se tinha `data: "12/05 14:00"` (texto livre), tenta separar
+// Se já está no formato novo (data + hora separados), mantém
+function normalizarTransporte(obj) {
+  const novo = {
+    tipo: obj.tipo || 'Avião',
+    empresa: obj.empresa || '',
+    data: obj.data || '',
+    hora: obj.hora || '',
+    custo: parseFloat(obj.custo) || 0,
+    voucher: obj.voucher || '',
+    obs: obj.obs || ''
+  };
+  // Se não tem `hora` separada e `data` contém espaço, tenta separar (compatibilidade)
+  if (!novo.hora && novo.data && /\s/.test(novo.data.trim())) {
+    const partes = novo.data.trim().split(/\s+/);
+    if (partes.length === 2) {
+      novo.data = partes[0];
+      novo.hora = partes[1];
+    }
+  }
+  return novo;
 }
 
 function duplicarViagem(id) {
@@ -1004,6 +1035,7 @@ function salvarRascunhos() {
         tipo: document.getElementById(`chegada_tipo_${i}`)?.value || 'Avião',
         empresa: document.getElementById(`chegada_empresa_${i}`)?.value || '',
         data: document.getElementById(`chegada_data_${i}`)?.value || '',
+        hora: document.getElementById(`chegada_hora_${i}`)?.value || '',
         custo: document.getElementById(`chegada_custo_${i}`)?.value || '',
         voucher: document.getElementById(`chegada_voucher_${i}`)?.value || ''
       };
@@ -1013,6 +1045,7 @@ function salvarRascunhos() {
         tipo: document.getElementById(`conexao_tipo_${i}`)?.value || 'Avião',
         empresa: document.getElementById(`conexao_empresa_${i}`)?.value || '',
         data: document.getElementById(`conexao_data_${i}`)?.value || '',
+        hora: document.getElementById(`conexao_hora_${i}`)?.value || '',
         custo: document.getElementById(`conexao_custo_${i}`)?.value || '',
         voucher: document.getElementById(`conexao_voucher_${i}`)?.value || '',
         obs: document.getElementById(`conexao_obs_${i}`)?.value || ''
@@ -1023,6 +1056,7 @@ function salvarRascunhos() {
         tipo: document.getElementById(`volta_tipo_${i}`)?.value || 'Avião',
         empresa: document.getElementById(`volta_empresa_${i}`)?.value || '',
         data: document.getElementById(`volta_data_${i}`)?.value || '',
+        hora: document.getElementById(`volta_hora_${i}`)?.value || '',
         custo: document.getElementById(`volta_custo_${i}`)?.value || '',
         voucher: document.getElementById(`volta_voucher_${i}`)?.value || ''
       };
@@ -1066,11 +1100,12 @@ function moverCidade(from, to) {
 function addChegada(cIdx) {
   const tipo = document.getElementById(`chegada_tipo_${cIdx}`).value;
   const empresa = document.getElementById(`chegada_empresa_${cIdx}`).value.trim();
-  const data = document.getElementById(`chegada_data_${cIdx}`).value.trim();
+  const data = document.getElementById(`chegada_data_${cIdx}`).value;
+  const hora = document.getElementById(`chegada_hora_${cIdx}`).value;
   const custo = parseFloat(document.getElementById(`chegada_custo_${cIdx}`).value) || 0;
   const voucher = document.getElementById(`chegada_voucher_${cIdx}`).value.trim();
   if (!empresa && !data) return alert('Preencha empresa ou data de chegada.');
-  estado.cidades[cIdx].transporte.push({ tipo, empresa, data, custo, voucher });
+  estado.cidades[cIdx].transporte.push({ tipo, empresa, data, hora, custo, voucher, obs: '' });
   estado.cidades[cIdx]._rascunhoChegada = null;
   render();
 }
@@ -1078,12 +1113,13 @@ function addChegada(cIdx) {
 function salvarConexao(cIdx) {
   const tipo = document.getElementById(`conexao_tipo_${cIdx}`).value;
   const empresa = document.getElementById(`conexao_empresa_${cIdx}`).value.trim();
-  const data = document.getElementById(`conexao_data_${cIdx}`).value.trim();
+  const data = document.getElementById(`conexao_data_${cIdx}`).value;
+  const hora = document.getElementById(`conexao_hora_${cIdx}`).value;
   const custo = parseFloat(document.getElementById(`conexao_custo_${cIdx}`).value) || 0;
   const voucher = document.getElementById(`conexao_voucher_${cIdx}`).value.trim();
   const obs = document.getElementById(`conexao_obs_${cIdx}`).value.trim();
   if (!empresa && !data) return alert('Preencha empresa ou data da conexão.');
-  estado.cidades[cIdx].conexao = { tipo, empresa, data, custo, voucher, obs };
+  estado.cidades[cIdx].conexao = { tipo, empresa, data, hora, custo, voucher, obs };
   estado.cidades[cIdx]._rascunhoConexao = null;
   render();
 }
@@ -1091,11 +1127,12 @@ function salvarConexao(cIdx) {
 function addVolta(cIdx) {
   const tipo = document.getElementById(`volta_tipo_${cIdx}`).value;
   const empresa = document.getElementById(`volta_empresa_${cIdx}`).value.trim();
-  const data = document.getElementById(`volta_data_${cIdx}`).value.trim();
+  const data = document.getElementById(`volta_data_${cIdx}`).value;
+  const hora = document.getElementById(`volta_hora_${cIdx}`).value;
   const custo = parseFloat(document.getElementById(`volta_custo_${cIdx}`).value) || 0;
   const voucher = document.getElementById(`volta_voucher_${cIdx}`).value.trim();
   if (!empresa && !data) return alert('Preencha empresa ou data de volta.');
-  estado.cidades[cIdx].volta = { tipo, empresa, data, custo, voucher };
+  estado.cidades[cIdx].volta = { tipo, empresa, data, hora, custo, voucher, obs: '' };
   estado.cidades[cIdx]._rascunhoVolta = null;
   render();
 }
@@ -1114,7 +1151,7 @@ function addHotel(cIdx) {
 function addLocal(cIdx) {
   const nome = document.getElementById(`local_nome_${cIdx}`).value.trim();
   const data = document.getElementById(`local_data_${cIdx}`).value;
-  const hora = document.getElementById(`local_hora_${cIdx}`).value.trim();
+  const hora = document.getElementById(`local_hora_${cIdx}`).value;
   const cat = document.getElementById(`local_cat_${cIdx}`).value;
   if (!nome) return alert('Informe o nome do local.');
   salvarRascunhos();
@@ -1138,28 +1175,16 @@ function remover(cIdx, tipo, i) {
 function iniciarEdicao(cIdx, tipo, idx) {
   salvarRascunhos();
   estado.cidades[cIdx]._editando = { tipo, idx };
-  const c = estado.cidades[cIdx];
-  let item;
-  if (tipo === 'chegada') item = c.transporte[idx];
-  else if (tipo === 'hotel') item = c.hotel[idx];
-  else if (tipo === 'local') item = c.locais[idx];
-  else if (tipo === 'conexao') item = c.conexao;
-  else if (tipo === 'volta') item = c.volta;
-  else if (tipo === 'cidade') item = { nome: c.nome, chegada: c.chegada, saida: c.saida };
-  c._editandoValores = JSON.parse(JSON.stringify(item || {}));
   render();
   setTimeout(() => {
     const el = document.getElementById(`edicao_${tipo}_${cIdx}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, 50);
 }
-
 function cancelarEdicao(cIdx) {
   estado.cidades[cIdx]._editando = null;
-  estado.cidades[cIdx]._editandoValores = null;
   render();
 }
-
 function salvarEdicao(cIdx) {
   const c = estado.cidades[cIdx];
   const ed = c._editando;
@@ -1170,7 +1195,8 @@ function salvarEdicao(cIdx) {
     const t = c.transporte[idx];
     t.tipo = document.getElementById(`ed_chegada_tipo_${cIdx}`).value;
     t.empresa = document.getElementById(`ed_chegada_empresa_${cIdx}`).value.trim();
-    t.data = document.getElementById(`ed_chegada_data_${cIdx}`).value.trim();
+    t.data = document.getElementById(`ed_chegada_data_${cIdx}`).value;
+    t.hora = document.getElementById(`ed_chegada_hora_${cIdx}`).value;
     t.custo = parseFloat(document.getElementById(`ed_chegada_custo_${cIdx}`).value) || 0;
     t.voucher = document.getElementById(`ed_chegada_voucher_${cIdx}`).value.trim();
   } else if (tipo === 'hotel') {
@@ -1184,13 +1210,14 @@ function salvarEdicao(cIdx) {
     const l = c.locais[idx];
     l.nome = document.getElementById(`ed_local_nome_${cIdx}`).value.trim();
     l.data = document.getElementById(`ed_local_data_${cIdx}`).value;
-    l.hora = document.getElementById(`ed_local_hora_${cIdx}`).value.trim();
+    l.hora = document.getElementById(`ed_local_hora_${cIdx}`).value;
     l.cat = document.getElementById(`ed_local_cat_${cIdx}`).value;
   } else if (tipo === 'conexao') {
     c.conexao = {
       tipo: document.getElementById(`ed_conexao_tipo_${cIdx}`).value,
       empresa: document.getElementById(`ed_conexao_empresa_${cIdx}`).value.trim(),
-      data: document.getElementById(`ed_conexao_data_${cIdx}`).value.trim(),
+      data: document.getElementById(`ed_conexao_data_${cIdx}`).value,
+      hora: document.getElementById(`ed_conexao_hora_${cIdx}`).value,
       custo: parseFloat(document.getElementById(`ed_conexao_custo_${cIdx}`).value) || 0,
       voucher: document.getElementById(`ed_conexao_voucher_${cIdx}`).value.trim(),
       obs: document.getElementById(`ed_conexao_obs_${cIdx}`).value.trim()
@@ -1199,9 +1226,11 @@ function salvarEdicao(cIdx) {
     c.volta = {
       tipo: document.getElementById(`ed_volta_tipo_${cIdx}`).value,
       empresa: document.getElementById(`ed_volta_empresa_${cIdx}`).value.trim(),
-      data: document.getElementById(`ed_volta_data_${cIdx}`).value.trim(),
+      data: document.getElementById(`ed_volta_data_${cIdx}`).value,
+      hora: document.getElementById(`ed_volta_hora_${cIdx}`).value,
       custo: parseFloat(document.getElementById(`ed_volta_custo_${cIdx}`).value) || 0,
-      voucher: document.getElementById(`ed_volta_voucher_${cIdx}`).value.trim()
+      voucher: document.getElementById(`ed_volta_voucher_${cIdx}`).value.trim(),
+      obs: ''
     };
   } else if (tipo === 'cidade') {
     c.nome = document.getElementById(`ed_cidade_nome_${cIdx}`).value.trim();
@@ -1210,7 +1239,6 @@ function salvarEdicao(cIdx) {
   }
 
   c._editando = null;
-  c._editandoValores = null;
   render();
 }
 
@@ -1327,7 +1355,7 @@ function renderCidades() {
     ` : `
       <div class="cidade-header">
         <span class="drag-handle" title="Arraste para reordenar">⋮⋮</span>
-        <h3>${cIdx + 1}. ${c.nome} <small>(${diasCidade} dia(s) · ${c.locais.length} local(is))</small></h3>
+        <h3>${cIdx + 1}. ${c.nome} <small>(${formatarData(c.chegada)} → ${formatarData(c.saida)} · ${diasCidade} dia(s) · ${c.locais.length} local(is))</small></h3>
         <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'cidade')">✏️ Editar</button>
         <button class="danger btn-del" onclick="removerCidade(${cIdx})">Remover</button>
       </div>
@@ -1346,7 +1374,8 @@ function renderCidades() {
                   `<option ${c.conexao?.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
               </select></div>
               <div><label>Empresa</label><input id="ed_conexao_empresa_${cIdx}" value="${escapeHtml(c.conexao?.empresa || '')}"></div>
-              <div><label>Data/hora</label><input id="ed_conexao_data_${cIdx}" value="${escapeHtml(c.conexao?.data || '')}"></div>
+              <div><label>Data</label><input id="ed_conexao_data_${cIdx}" type="date" value="${c.conexao?.data || ''}"></div>
+              <div><label>Hora</label><input id="ed_conexao_hora_${cIdx}" type="time" value="${c.conexao?.hora || ''}"></div>
               <div><label>Custo (R$)</label><input id="ed_conexao_custo_${cIdx}" type="number" value="${c.conexao?.custo || 0}"></div>
               <div><label>Voucher / Reserva</label><input id="ed_conexao_voucher_${cIdx}" value="${escapeHtml(c.conexao?.voucher || '')}"></div>
               <div><label>Observação</label><input id="ed_conexao_obs_${cIdx}" value="${escapeHtml(c.conexao?.obs || '')}"></div>
@@ -1368,7 +1397,8 @@ function renderCidades() {
                     `<option ${(rCx.tipo || c.conexao?.tipo) === t ? 'selected' : ''}>${t}</option>`).join('')}
                 </select></div>
                 <div><label>Empresa</label><input id="conexao_empresa_${cIdx}" placeholder="Ex: Ryanair" value="${escapeHtml(rCx.empresa || c.conexao?.empresa || '')}"></div>
-                <div><label>Data/hora</label><input id="conexao_data_${cIdx}" placeholder="Ex: 12/05 14:00" value="${escapeHtml(rCx.data || c.conexao?.data || '')}"></div>
+                <div><label>Data</label><input id="conexao_data_${cIdx}" type="date" value="${rCx.data || c.conexao?.data || ''}"></div>
+                <div><label>Hora</label><input id="conexao_hora_${cIdx}" type="time" value="${rCx.hora || c.conexao?.hora || ''}"></div>
                 <div><label>Custo (R$)</label><input id="conexao_custo_${cIdx}" type="number" placeholder="0" value="${rCx.custo || c.conexao?.custo || ''}"></div>
                 <div><label>Voucher / Reserva</label><input id="conexao_voucher_${cIdx}" placeholder="Ex: RY456" value="${escapeHtml(rCx.voucher || c.conexao?.voucher || '')}"></div>
                 <div><label>Observação</label><input id="conexao_obs_${cIdx}" placeholder="Ex: Bagagem de mão apenas" value="${escapeHtml(rCx.obs || c.conexao?.obs || '')}"></div>
@@ -1382,7 +1412,7 @@ function renderCidades() {
                 <div class="item-info">
                   <div class="item-title">${c.conexao.tipo} - ${c.conexao.empresa || '—'}</div>
                   <div class="item-detail">
-                    ${c.conexao.data || '—'} | R$ ${c.conexao.custo.toFixed(2)}
+                    ${formatarDataHora(c.conexao.data, c.conexao.hora)} | R$ ${c.conexao.custo.toFixed(2)}
                     ${c.conexao.voucher ? ` | 🎟️ ${escapeHtml(c.conexao.voucher)}` : ''}
                     ${c.conexao.obs ? `<br><em style="color:var(--text-muted);">${escapeHtml(c.conexao.obs)}</em>` : ''}
                   </div>
@@ -1406,7 +1436,8 @@ function renderCidades() {
                 `<option ${rCh.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
             </select></div>
             <div><label>Empresa</label><input id="chegada_empresa_${cIdx}" placeholder="Ex: TAP" value="${escapeHtml(rCh.empresa || '')}"></div>
-            <div><label>Data/hora</label><input id="chegada_data_${cIdx}" placeholder="Ex: 10/05 08:30" value="${escapeHtml(rCh.data || '')}"></div>
+            <div><label>Data</label><input id="chegada_data_${cIdx}" type="date" value="${rCh.data || ''}"></div>
+            <div><label>Hora</label><input id="chegada_hora_${cIdx}" type="time" value="${rCh.hora || ''}"></div>
             <div><label>Custo (R$)</label><input id="chegada_custo_${cIdx}" type="number" placeholder="0" value="${rCh.custo || ''}"></div>
             <div><label>Voucher / Reserva</label><input id="chegada_voucher_${cIdx}" placeholder="Ex: ABC123" value="${escapeHtml(rCh.voucher || '')}"></div>
           </div>
@@ -1426,7 +1457,8 @@ function renderCidades() {
                             `<option ${t.tipo === tt ? 'selected' : ''}>${tt}</option>`).join('')}
                         </select></div>
                         <div><label>Empresa</label><input id="ed_chegada_empresa_${cIdx}" value="${escapeHtml(t.empresa || '')}"></div>
-                        <div><label>Data/hora</label><input id="ed_chegada_data_${cIdx}" value="${escapeHtml(t.data || '')}"></div>
+                        <div><label>Data</label><input id="ed_chegada_data_${cIdx}" type="date" value="${t.data || ''}"></div>
+                        <div><label>Hora</label><input id="ed_chegada_hora_${cIdx}" type="time" value="${t.hora || ''}"></div>
                         <div><label>Custo</label><input id="ed_chegada_custo_${cIdx}" type="number" value="${t.custo || 0}"></div>
                         <div><label>Voucher</label><input id="ed_chegada_voucher_${cIdx}" value="${escapeHtml(t.voucher || '')}"></div>
                       </div>
@@ -1442,7 +1474,7 @@ function renderCidades() {
                   <div class="item-info">
                     <div class="item-title">${t.tipo} - ${t.empresa || '—'}</div>
                     <div class="item-detail">
-                      ${t.data || '—'} | R$ ${t.custo.toFixed(2)}
+                      ${formatarDataHora(t.data, t.hora)} | R$ ${t.custo.toFixed(2)}
                       ${t.voucher ? ` | 🎟️ ${escapeHtml(t.voucher)}` : ''}
                     </div>
                   </div>
@@ -1468,7 +1500,8 @@ function renderCidades() {
                     `<option ${c.volta?.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
                 </select></div>
                 <div><label>Empresa</label><input id="ed_volta_empresa_${cIdx}" value="${escapeHtml(c.volta?.empresa || '')}"></div>
-                <div><label>Data/hora</label><input id="ed_volta_data_${cIdx}" value="${escapeHtml(c.volta?.data || '')}"></div>
+                <div><label>Data</label><input id="ed_volta_data_${cIdx}" type="date" value="${c.volta?.data || ''}"></div>
+                <div><label>Hora</label><input id="ed_volta_hora_${cIdx}" type="time" value="${c.volta?.hora || ''}"></div>
                 <div><label>Custo</label><input id="ed_volta_custo_${cIdx}" type="number" value="${c.volta?.custo || 0}"></div>
                 <div><label>Voucher</label><input id="ed_volta_voucher_${cIdx}" value="${escapeHtml(c.volta?.voucher || '')}"></div>
               </div>
@@ -1489,7 +1522,8 @@ function renderCidades() {
                   `<option ${(rV.tipo || c.volta?.tipo) === t ? 'selected' : ''}>${t}</option>`).join('')}
               </select></div>
               <div><label>Empresa</label><input id="volta_empresa_${cIdx}" placeholder="Ex: TAP" value="${escapeHtml(rV.empresa || c.volta?.empresa || '')}"></div>
-              <div><label>Data/hora</label><input id="volta_data_${cIdx}" placeholder="Ex: 20/05 18:00" value="${escapeHtml(rV.data || c.volta?.data || '')}"></div>
+              <div><label>Data</label><input id="volta_data_${cIdx}" type="date" value="${rV.data || c.volta?.data || ''}"></div>
+              <div><label>Hora</label><input id="volta_hora_${cIdx}" type="time" value="${rV.hora || c.volta?.hora || ''}"></div>
               <div><label>Custo (R$)</label><input id="volta_custo_${cIdx}" type="number" placeholder="0" value="${rV.custo || c.volta?.custo || ''}"></div>
               <div><label>Voucher / Reserva</label><input id="volta_voucher_${cIdx}" placeholder="Ex: XYZ999" value="${escapeHtml(rV.voucher || c.volta?.voucher || '')}"></div>
             </div>
@@ -1503,7 +1537,7 @@ function renderCidades() {
                 <div class="item-info">
                   <div class="item-title">${c.volta.tipo} - ${c.volta.empresa || '—'} <span class="badge cinza">VOLTA</span></div>
                   <div class="item-detail">
-                    ${c.volta.data || '—'} | R$ ${c.volta.custo.toFixed(2)}
+                    ${formatarDataHora(c.volta.data, c.volta.hora)} | R$ ${c.volta.custo.toFixed(2)}
                     ${c.volta.voucher ? ` | 🎟️ ${escapeHtml(c.volta.voucher)}` : ''}
                   </div>
                 </div>
@@ -1539,7 +1573,7 @@ function renderCidades() {
         <div class="item-row">
           <div class="item-info">
             <div class="item-title">${h.nome}</div>
-            <div class="item-detail">${h.end || '—'} | In: ${h.checkin || '—'} | Out: ${h.checkout || '—'} | R$ ${h.custo.toFixed(2)}/noite</div>
+            <div class="item-detail">${h.end || '—'} | In: ${formatarData(h.checkin)} | Out: ${formatarData(h.checkout)} | R$ ${h.custo.toFixed(2)}/noite</div>
           </div>
           <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'hotel', ${i})">✏️</button>
           <button class="danger btn-del" onclick="remover(${cIdx}, 'hotel', ${i})">x</button>
@@ -1555,7 +1589,7 @@ function renderCidades() {
               <div class="grid">
                 <div><label>Local</label><input id="ed_local_nome_${cIdx}" value="${escapeHtml(l.nome || '')}"></div>
                 <div><label>Data</label><input id="ed_local_data_${cIdx}" type="date" value="${l.data || ''}"></div>
-                <div><label>Horário</label><input id="ed_local_hora_${cIdx}" value="${escapeHtml(l.hora || '')}"></div>
+                <div><label>Hora</label><input id="ed_local_hora_${cIdx}" type="time" value="${l.hora || ''}"></div>
                 <div><label>Categoria</label><select id="ed_local_cat_${cIdx}">
                   ${['Turismo','Gastronomia','Compras','Cultura','Natureza'].map(cc =>
                     `<option ${l.cat === cc ? 'selected' : ''}>${cc}</option>`).join('')}
@@ -1572,7 +1606,7 @@ function renderCidades() {
         <div class="item-row">
           <div class="item-info">
             <div class="item-title">${l.nome} <span class="badge cinza">${l.cat}</span></div>
-            <div class="item-detail">${l.data || '—'} ${l.hora ? 'às ' + l.hora : ''}</div>
+            <div class="item-detail">${formatarData(l.data)} ${l.hora ? 'às ' + l.hora : ''}</div>
           </div>
           <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'local', ${i})">✏️</button>
           <button class="danger btn-del" onclick="remover(${cIdx}, 'locais', ${i})">x</button>
@@ -1612,7 +1646,7 @@ function renderCidades() {
         <div class="grid form-add">
           <div><label>Local</label><input id="local_nome_${cIdx}" placeholder="Ex: Torre de Belém"></div>
           <div><label>Data</label><input id="local_data_${cIdx}" type="date"></div>
-          <div><label>Horário</label><input id="local_hora_${cIdx}" placeholder="Ex: 10:00"></div>
+          <div><label>Hora</label><input id="local_hora_${cIdx}" type="time"></div>
           <div><label>Categoria</label><select id="local_cat_${cIdx}">
             <option>Turismo</option><option>Gastronomia</option><option>Compras</option><option>Cultura</option><option>Natureza</option>
           </select></div>
@@ -1635,15 +1669,13 @@ function renderTimeline() {
       titulo: `Chegada em ${c.nome}`, sub: ''
     });
     c.transporte.forEach(t => {
-      if (t.data) {
-        const [dataStr, hora] = t.data.split(' ');
-        eventos.push({ data: dataStr, hora: hora || '', tipo: 'transporte',
+      if (t.data || t.hora) {
+        eventos.push({ data: t.data || '', hora: t.hora || '', tipo: 'transporte',
           titulo: `🛫 Chegada — ${t.tipo} ${t.empresa || ''}`, sub: `Em ${c.nome}` });
       }
     });
-    if (c.conexao && c.conexao.data) {
-      const [dataStr, hora] = c.conexao.data.split(' ');
-      eventos.push({ data: dataStr, hora: hora || '', tipo: 'conexao',
+    if (c.conexao && (c.conexao.data || c.conexao.hora)) {
+      eventos.push({ data: c.conexao.data || '', hora: c.conexao.hora || '', tipo: 'conexao',
         titulo: `🔗 ${c.conexao.tipo} ${c.conexao.empresa || ''}`,
         sub: `${estado.cidades[i-1]?.nome || '?'} → ${c.nome}` });
     }
@@ -1652,13 +1684,12 @@ function renderTimeline() {
         titulo: `Check-in ${h.nome}`, sub: c.nome });
     });
     c.locais.forEach(l => {
-      if (l.data) eventos.push({ data: l.data, hora: l.hora || '', tipo: 'local',
+      if (l.data || l.hora) eventos.push({ data: l.data || '', hora: l.hora || '', tipo: 'local',
         titulo: l.nome, sub: `${c.nome} • ${l.cat}` });
     });
-    if (c.volta && c.volta.data) {
-      const [dataStr, hora] = c.volta.data.split(' ');
+    if (c.volta && (c.volta.data || c.volta.hora)) {
       eventos.push({
-        data: dataStr, hora: hora || '', tipo: 'volta',
+        data: c.volta.data || '', hora: c.volta.hora || '', tipo: 'volta',
         titulo: `🛬 Volta para casa — ${c.volta.tipo} ${c.volta.empresa || ''}`,
         sub: `De ${c.nome}`
       });
@@ -1668,16 +1699,36 @@ function renderTimeline() {
     box.innerHTML = '<div class="empty">Adicione datas aos locais/transportes</div>';
     return;
   }
-  eventos.sort((a, b) => ((a.data||'') + ' ' + (a.hora||'00:00')).localeCompare((b.data||'') + ' ' + (b.hora||'00:00')));
+  const chaveOrdenacao = (e) => {
+    const d = e.data || '';
+    const h = e.hora || '00:00';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d + ' ' + h;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(d)) {
+      const [dd, mm, yyyy] = d.split('/');
+      return `${yyyy}-${mm}-${dd} ${h}`;
+    }
+    return d + ' ' + h;
+  };
+  eventos.sort((a, b) => chaveOrdenacao(a).localeCompare(chaveOrdenacao(b)));
   const porDia = {};
-  eventos.forEach(e => { if (!porDia[e.data]) porDia[e.data] = []; porDia[e.data].push(e); });
+  eventos.forEach(e => {
+    const chave = e.data || 'sem-data';
+    if (!porDia[chave]) porDia[chave] = [];
+    porDia[chave].push(e);
+  });
   box.innerHTML = '<div class="timeline">' + Object.entries(porDia).map(([data, evs]) => {
-    const dt = new Date(data + 'T00:00:00');
-    const diaSemana = dt.toLocaleDateString('pt-BR', { weekday: 'long' });
-    const dataFmt = dt.toLocaleDateString('pt-BR');
+    let dt = null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+      dt = new Date(data + 'T00:00:00');
+    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+      const [d, m, y] = data.split('/');
+      dt = new Date(`${y}-${m}-${d}T00:00:00`);
+    }
+    const diaSemana = dt ? dt.toLocaleDateString('pt-BR', { weekday: 'long' }) : '';
+    const dataFmt = data === 'sem-data' ? 'Sem data' : formatarData(data);
     return `
       <div class="timeline-dia">
-        <h4>📅 ${dataFmt} (${diaSemana})</h4>
+        <h4>📅 ${dataFmt}${diaSemana ? ' (' + diaSemana + ')' : ''}</h4>
         ${evs.map(e => `
           <div class="timeline-evento ${e.tipo}">
             <span class="hora">${e.hora || '—'}</span>
@@ -1769,7 +1820,7 @@ async function exportarPDF() {
   pdf.setTextColor(255, 255, 255); pdf.setFontSize(22); pdf.setFont(undefined, 'bold');
   pdf.text('✈️ ' + destino, margin, 18);
   pdf.setFontSize(11); pdf.setFont(undefined, 'normal');
-  pdf.text(`${ida || '?'} → ${volta || '?'}`, margin, 27);
+  pdf.text(`${formatarData(ida)} → ${formatarData(volta)}`, margin, 27);
   y = 45; pdf.setTextColor(0, 0, 0);
   const checkPage = (need = 10) => { if (y + need > pageH - margin) { pdf.addPage(); y = margin; } };
 
@@ -1778,7 +1829,7 @@ async function exportarPDF() {
     checkPage(40);
     pdf.setFillColor(240, 244, 255); pdf.rect(margin, y, pageW - 2*margin, 9, 'F');
     pdf.setFontSize(13); pdf.setFont(undefined, 'bold'); pdf.setTextColor(118, 75, 162);
-    pdf.text(`${i+1}. ${c.nome}  (${c.chegada || '?'} → ${c.saida || '?'})`, margin + 3, y + 6);
+    pdf.text(`${i+1}. ${c.nome}  (${formatarData(c.chegada)} → ${formatarData(c.saida)})`, margin + 3, y + 6);
     y += 14; pdf.setTextColor(0, 0, 0);
 
     if (i > 0 && c.conexao) {
@@ -1787,7 +1838,7 @@ async function exportarPDF() {
       pdf.text('Conexão:', margin + 3, y); y += 5;
       pdf.setTextColor(0, 0, 0);
       pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
-      let linha = `  • ${estado.cidades[i-1].nome} → ${c.nome} | ${c.conexao.tipo} ${c.conexao.empresa || ''} | ${c.conexao.data || '—'} | R$ ${c.conexao.custo.toFixed(2)}`;
+      let linha = `  • ${estado.cidades[i-1].nome} → ${c.nome} | ${c.conexao.tipo} ${c.conexao.empresa || ''} | ${formatarDataHora(c.conexao.data, c.conexao.hora)} | R$ ${c.conexao.custo.toFixed(2)}`;
       if (c.conexao.voucher) linha += ` | 🎟️ ${c.conexao.voucher}`;
       pdf.text(linha, margin + 5, y); y += 5;
       if (c.conexao.obs) {
@@ -1804,7 +1855,7 @@ async function exportarPDF() {
       pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
       c.transporte.forEach(t => {
         checkPage(5);
-        let linha = `  • ${t.tipo} ${t.empresa || ''} | ${t.data || '—'} | R$ ${t.custo.toFixed(2)}`;
+        let linha = `  • ${t.tipo} ${t.empresa || ''} | ${formatarDataHora(t.data, t.hora)} | R$ ${t.custo.toFixed(2)}`;
         if (t.voucher) linha += ` | 🎟️ ${t.voucher}`;
         pdf.text(linha, margin + 5, y);
         y += 5;
@@ -1817,7 +1868,7 @@ async function exportarPDF() {
       pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
       c.hotel.forEach(h => {
         checkPage(5);
-        pdf.text(`  • ${h.nome} | ${h.end || '—'} | ${h.checkin || '?'} a ${h.checkout || '?'} | R$ ${h.custo.toFixed(2)}/noite`, margin + 5, y);
+        pdf.text(`  • ${h.nome} | ${h.end || '—'} | ${formatarData(h.checkin)} a ${formatarData(h.checkout)} | R$ ${h.custo.toFixed(2)}/noite`, margin + 5, y);
         y += 5;
       });
     }
@@ -1828,7 +1879,7 @@ async function exportarPDF() {
       pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
       c.locais.forEach(l => {
         checkPage(5);
-        pdf.text(`  • ${l.data || '—'} ${l.hora || ''} — ${l.nome} (${l.cat})`, margin + 5, y);
+        pdf.text(`  • ${formatarData(l.data)} ${l.hora || ''} — ${l.nome} (${l.cat})`, margin + 5, y);
         y += 5;
       });
     }
@@ -1839,7 +1890,7 @@ async function exportarPDF() {
       pdf.text('Volta para casa:', margin + 3, y); y += 5;
       pdf.setTextColor(0, 0, 0);
       pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
-      let linha = `  • ${c.volta.tipo} ${c.volta.empresa || ''} | ${c.volta.data || '—'} | R$ ${c.volta.custo.toFixed(2)}`;
+      let linha = `  • ${c.volta.tipo} ${c.volta.empresa || ''} | ${formatarDataHora(c.volta.data, c.volta.hora)} | R$ ${c.volta.custo.toFixed(2)}`;
       if (c.volta.voucher) linha += ` | 🎟️ ${c.volta.voucher}`;
       pdf.text(linha, margin + 5, y);
       y += 5;
