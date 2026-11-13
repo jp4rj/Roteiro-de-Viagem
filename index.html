@@ -91,27 +91,6 @@
   }
   .subtitulo::before { content: ''; width: 4px; height: 16px; background: #667eea; border-radius: 2px; }
 
-  /* FOTO DA CIDADE */
-  .cidade-foto {
-    width: 100%; height: 160px; border-radius: 8px; margin-bottom: 12px;
-    background-size: cover; background-position: center;
-    background-color: #e0e6ff;
-    display: flex; align-items: center; justify-content: center;
-    position: relative; overflow: hidden;
-    transition: opacity 0.3s; opacity: 0;
-  }
-  .cidade-foto.carregada { opacity: 1; }
-  .cidade-foto.vazia {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white; font-size: 2.5em; opacity: 1;
-  }
-  .cidade-foto .credito {
-    position: absolute; bottom: 4px; right: 8px;
-    font-size: 0.65em; color: rgba(255,255,255,0.85);
-    background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  }
-
   .timeline { position: relative; padding-left: 30px; margin-top: 15px; }
   .timeline::before {
     content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
@@ -173,18 +152,88 @@
     margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
   }
   .topbar h1 { color: white; margin: 0; font-size: 1.8em; }
+
+  /* ========== CARD DA VIAGEM (com foto de capa) ========== */
   .viagem-card {
-    background: white; border-radius: 12px; padding: 18px;
-    margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 15px; flex-wrap: wrap; transition: transform 0.15s;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: transform 0.15s, box-shadow 0.15s;
   }
-  .viagem-card:hover { transform: translateY(-2px); }
-  .viagem-card .info { flex: 1; min-width: 200px; }
-  .viagem-card h3 { color: #764ba2; font-size: 1.2em; margin-bottom: 4px; }
-  .viagem-card .meta { font-size: 0.85em; color: #666; }
-  .viagem-card .botoes { display: flex; gap: 6px; flex-wrap: wrap; }
-  .viagem-card.vazia { display: block; text-align: center; color: #999; padding: 40px; }
+  .viagem-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+  .viagem-card .capa {
+    width: 100%;
+    height: 160px;
+    background-size: cover;
+    background-position: center;
+    background-color: #e0e6ff;
+    background-image: linear-gradient(135deg, #667eea, #764ba2);
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .viagem-card .capa::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.65) 100%);
+    pointer-events: none;
+  }
+  .viagem-card .capa.vazia {
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+    color: rgba(255,255,255,0.85);
+  }
+  .viagem-card .capa.vazia::after { display: none; }
+  .viagem-card .capa .titulo-capa {
+    position: relative;
+    z-index: 1;
+    color: white;
+    padding: 12px 16px;
+    font-size: 1.15em;
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+  .viagem-card .capa .credito-foto {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 1;
+    font-size: 0.65em;
+    color: rgba(255,255,255,0.9);
+    background: rgba(0,0,0,0.45);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .viagem-card .corpo { padding: 16px; }
+  .viagem-card .meta {
+    font-size: 0.88em;
+    color: #666;
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+  .viagem-card .botoes {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .viagem-card.vazia {
+    padding: 40px;
+    text-align: center;
+    color: #999;
+  }
+  .viagem-card.vazia:hover { transform: none; }
 
   .banner-offline {
     position: fixed; top: 0; left: 0; right: 0;
@@ -198,7 +247,8 @@
     .item-row { flex-wrap: wrap; }
     h1 { font-size: 1.5em; }
     .timeline { padding-left: 24px; }
-    .viagem-card { flex-direction: column; align-items: stretch; }
+    .viagem-card .capa { height: 130px; }
+    .viagem-card .capa .titulo-capa { font-size: 1em; }
   }
 </style>
 </head>
@@ -253,7 +303,7 @@
 
   <div class="card">
     <h2>🏙️ Cidades da Viagem <span class="badge" id="badgeCidades">0</span></h2>
-    <p style="font-size:0.85em;color:#888;margin-bottom:10px;">💡 Arraste o ícone <strong>⋮⋮</strong> para reordenar.</p>
+    <p style="font-size:0.85em;color:#888;margin-bottom:10px;">💡 Arraste o ícone <strong>⋮⋮</strong> para reordenar. A 1ª cidade vira a capa do card na lista.</p>
     <div class="grid">
       <div><label>Nome da cidade</label><input id="cidade_nome" placeholder="Ex: Lisboa"></div>
       <div><label>Chegada</label><input id="cidade_chegada" type="date"></div>
@@ -314,7 +364,7 @@ function gerarId() {
 
 // ===================== FOTOS (Wikipedia) =====================
 const fotoCache = new Map();
-const FOTO_CACHE_KEY = 'fotosCidades_v1';
+const FOTO_CACHE_KEY = 'fotosCidades_v2';
 
 function carregarFotoCache() {
   try {
@@ -356,18 +406,29 @@ async function buscarFotoCidade(nomeCidade) {
   salvarFotoCache();
   return null;
 }
-async function aplicarFoto(el, nomeCidade) {
+
+// Aplica a foto de capa no card da viagem
+async function aplicarFotoCapa(el, nomeCidade) {
   if (!el) return;
+  const titulo = el.querySelector('.titulo-capa');
   const res = await buscarFotoCidade(nomeCidade);
   if (res && res.url) {
     el.style.backgroundImage = `url('${res.url}')`;
-    el.classList.add('carregada');
     el.classList.remove('vazia');
-    el.innerHTML = `<span class="credito">📷 Wikipedia</span>`;
+    el.innerHTML = '';
+    if (titulo) el.appendChild(titulo);
+    const credito = document.createElement('span');
+    credito.className = 'credito-foto';
+    credito.textContent = '📷 Wikipedia';
+    el.appendChild(credito);
   } else {
     el.classList.add('vazia');
-    el.classList.remove('carregada');
-    el.textContent = '🏙️';
+    el.innerHTML = '';
+    if (titulo) el.appendChild(titulo);
+    const emoji = document.createElement('span');
+    emoji.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.5em;opacity:0.5;';
+    emoji.textContent = '🏙️';
+    el.appendChild(emoji);
   }
 }
 
@@ -378,6 +439,7 @@ function mostrarLista() {
   document.getElementById('fabPDF').style.display = 'none';
   renderLista();
 }
+
 function renderLista() {
   const box = document.getElementById('listaViagens');
   const ids = Object.keys(store.viagens);
@@ -390,7 +452,9 @@ function renderLista() {
       </div>`;
     return;
   }
+
   ids.sort((a, b) => (store.viagens[b].criadaEm || '').localeCompare(store.viagens[a].criadaEm || ''));
+
   box.innerHTML = ids.map(id => {
     const v = store.viagens[id];
     const d = v.dados || {};
@@ -398,20 +462,45 @@ function renderLista() {
     const nLocais = (d.cidades || []).reduce((s, c) => s + (c.locais?.length || 0), 0);
     const periodo = (d.dataIda && d.dataVolta)
       ? `${formatarData(d.dataIda)} → ${formatarData(d.dataVolta)}` : 'Datas não definidas';
+
+    // Nome a buscar na Wikipedia: 1ª cidade → destino → nome da viagem
+    const primeiraCidade = (d.cidades && d.cidades[0]?.nome) || '';
+    const nomeParaBuscar = (primeiraCidade || d.destino || v.nome || '').trim();
+
     return `
       <div class="viagem-card">
-        <div class="info">
-          <h3>✈️ ${escapeHtml(v.nome || 'Viagem sem nome')}</h3>
-          <div class="meta">📅 ${periodo} · 🏙️ ${nCidades} cidade(s) · 📍 ${nLocais} local(is)</div>
+        <div class="capa" id="capa_viagem_${id}" data-cidade="${escapeHtml(nomeParaBuscar)}">
+          <div class="titulo-capa">✈️ ${escapeHtml(v.nome || 'Viagem sem nome')}</div>
         </div>
-        <div class="botoes">
-          <button onclick="abrirViagem('${id}')">Abrir</button>
-          <button class="secondary" onclick="duplicarViagem('${id}')">📋 Duplicar</button>
-          <button class="danger" onclick="excluirViagem('${id}')">Excluir</button>
+        <div class="corpo">
+          <div class="meta">
+            📅 ${periodo}<br>
+            🏙️ ${nCidades} cidade(s) · 📍 ${nLocais} local(is)
+          </div>
+          <div class="botoes">
+            <button onclick="abrirViagem('${id}')">Abrir</button>
+            <button class="secondary" onclick="duplicarViagem('${id}')">📋 Duplicar</button>
+            <button class="danger" onclick="excluirViagem('${id}')">Excluir</button>
+          </div>
         </div>
       </div>`;
   }).join('');
+
+  // Dispara busca de fotos em paralelo (não bloqueia o render)
+  ids.forEach(id => {
+    const v = store.viagens[id];
+    const d = v.dados || {};
+    const primeiraCidade = (d.cidades && d.cidades[0]?.nome) || '';
+    const nomeParaBuscar = (primeiraCidade || d.destino || v.nome || '').trim();
+    const el = document.getElementById(`capa_viagem_${id}`);
+    if (el && nomeParaBuscar) {
+      aplicarFotoCapa(el, nomeParaBuscar);
+    } else if (el) {
+      el.classList.add('vazia');
+    }
+  });
 }
+
 function formatarData(iso) {
   if (!iso) return '?';
   const [y, m, d] = iso.split('-');
@@ -667,7 +756,6 @@ function renderCidades() {
          ondragleave="onDragLeave(event)"
          ondrop="onDrop(event, ${cIdx})"
          ondragend="onDragEnd(event)">
-      <div class="cidade-foto" id="foto_cidade_${cIdx}"></div>
       <div class="cidade-header">
         <span class="drag-handle" title="Arraste para reordenar">⋮⋮</span>
         <h3>${cIdx + 1}. ${c.nome} <small>(${diasCidade} dia(s) · ${c.locais.length} local(is))</small></h3>
@@ -741,11 +829,6 @@ function renderCidades() {
       </div>
     </div>`;
   }).join('');
-
-  estado.cidades.forEach((c, idx) => {
-    const el = document.getElementById(`foto_cidade_${idx}`);
-    if (el) aplicarFoto(el, c.nome);
-  });
 }
 
 function renderTimeline() {
@@ -973,6 +1056,7 @@ if ('serviceWorker' in navigator) {
 }
 function atualizarBannerOffline() {
   const b = document.getElementById('bannerOffline');
+  if (!b) return;
   if (navigator.onLine) b.classList.remove('ativo');
   else b.classList.add('ativo');
 }
