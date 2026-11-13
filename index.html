@@ -1,24 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<link rel="manifest" href="manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#667eea">
 <title>Planejador de Viagem</title>
 
-<!-- Leaflet (mapa) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- jsPDF + html2canvas (PDF) -->
+<!-- jsPDF (PDF) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,8 +45,6 @@
   button.danger { background: #ff4757; padding: 6px 12px; font-size: 0.85em; }
   button.danger:hover { background: #ee3546; }
   button.small { padding: 6px 12px; font-size: 0.85em; }
-  button.success { background: #10b981; }
-  button.success:hover { background: #059669; }
   .item-row {
     display: flex; gap: 8px; align-items: center; padding: 10px;
     background: #f8f9fa; border-radius: 6px; margin-bottom: 8px;
@@ -66,11 +53,6 @@
   .item-row .item-title { font-weight: 600; }
   .item-row .item-detail { font-size: 0.85em; color: #666; }
   .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-  .summary {
-    background: #f8f9fa; border-left: 4px solid #667eea;
-    padding: 12px; border-radius: 6px; margin-top: 15px; font-size: 0.9em;
-  }
-  .summary strong { color: #667eea; }
   .badge {
     display: inline-block; background: #667eea; color: white;
     padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;
@@ -137,9 +119,6 @@
   .timeline-evento.hotel { border-left-color: #10b981; }
   .timeline-evento.local { border-left-color: #667eea; }
 
-  /* MAPA */
-  #mapa { height: 400px; border-radius: 10px; margin-top: 10px; z-index: 1; }
-
   /* ORÇAMENTO */
   .orcamento-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -175,10 +154,6 @@
     cursor: pointer; border: none;
   }
   .fab:hover { background: #dc2626; transform: scale(1.05); }
-
-  /* PDF PRINT AREA */
-  #printArea { display: none; }
-  #printArea .page { padding: 20mm; font-family: Arial, sans-serif; color: #000; }
 
   @media (max-width: 600px) {
     .item-row { flex-wrap: wrap; }
@@ -240,19 +215,7 @@
     <div id="timeline"></div>
   </div>
 
-  <!-- ========== MAPA ========== -->
-  <div class="card">
-    <h2>🗺️ Mapa da Viagem</h2>
-    <p style="font-size:0.85em;color:#888;margin-bottom:8px;">
-      Cidades e locais aparecem no mapa. Clique em "Atualizar Mapa" após adicionar coordenadas.
-    </p>
-    <div class="actions" style="margin-bottom:8px;">
-      <button class="small" onclick="atualizarMapa()">📍 Atualizar Mapa</button>
-    </div>
-    <div id="mapa"></div>
-  </div>
-
-  <!-- ========== ORÇAMENTO DETALHADO ========== -->
+  <!-- ========== ORÇAMENTO ========== -->
   <div class="card">
     <h2>💰 Orçamento Detalhado</h2>
     <div class="grid">
@@ -283,11 +246,7 @@
   </div>
 </div>
 
-<!-- FAB Exportar PDF -->
 <button class="fab" onclick="exportarPDF()" title="Exportar PDF">📄</button>
-
-<!-- Área invisível para o PDF -->
-<div id="printArea"></div>
 
 <script>
 // ================= ESTADO =================
@@ -296,8 +255,6 @@ let estado = {
   cidades: [],
   orcamento: { alimentacao: 150, passeios: 500, extras: 300 }
 };
-let mapa = null;
-let marcadoresLayer = null;
 
 // ================= PERSISTÊNCIA =================
 function salvarLocal() {
@@ -319,7 +276,6 @@ function carregarLocal() {
       });
     } catch(e) {}
   }
-  // restaurar campos de orçamento
   if (estado.orcamento) {
     document.getElementById('orc_alimentacao').value = estado.orcamento.alimentacao;
     document.getElementById('orc_passeios').value = estado.orcamento.passeios;
@@ -336,8 +292,7 @@ function addCidade() {
   estado.cidades.push({
     nome, chegada, saida,
     transporte: [], hotel: [], locais: [],
-    lat: null, lng: null,
-    conexao: null // { deCidade, tipo, custo }
+    conexao: null
   });
   document.getElementById('cidade_nome').value = '';
   document.getElementById('cidade_chegada').value = '';
@@ -383,10 +338,8 @@ function addLocal(cIdx) {
   const data = document.getElementById(`local_data_${cIdx}`).value;
   const hora = document.getElementById(`local_hora_${cIdx}`).value.trim();
   const cat = document.getElementById(`local_cat_${cIdx}`).value;
-  const lat = parseFloat(document.getElementById(`local_lat_${cIdx}`).value) || null;
-  const lng = parseFloat(document.getElementById(`local_lng_${cIdx}`).value) || null;
   if (!nome) return alert('Informe o nome do local.');
-  estado.cidades[cIdx].locais.push({ nome, data, hora, cat, lat, lng });
+  estado.cidades[cIdx].locais.push({ nome, data, hora, cat });
   render();
 }
 function remover(cIdx, tipo, i) {
@@ -400,17 +353,6 @@ function setConexao(cIdx) {
   const custo = parseFloat(document.getElementById(`conexao_custo_${cIdx}`).value) || 0;
   estado.cidades[cIdx].conexao = { tipo, custo };
   render();
-}
-
-// ================= COORDENADAS DA CIDADE =================
-function setCoordenadas(cIdx) {
-  const lat = parseFloat(document.getElementById(`cidade_lat_${cIdx}`).value);
-  const lng = parseFloat(document.getElementById(`cidade_lng_${cIdx}`).value);
-  if (isNaN(lat) || isNaN(lng)) return alert('Informe lat e lng válidos.');
-  estado.cidades[cIdx].lat = lat;
-  estado.cidades[cIdx].lng = lng;
-  render();
-  atualizarMapa();
 }
 
 // ================= BAGAGEM =================
@@ -480,7 +422,6 @@ function render() {
   renderTimeline();
   renderBagagem();
   renderOrcamento();
-  // salvar orçamento no estado
   estado.orcamento.alimentacao = parseFloat(document.getElementById('orc_alimentacao').value) || 0;
   estado.orcamento.passeios = parseFloat(document.getElementById('orc_passeios').value) || 0;
   estado.orcamento.extras = parseFloat(document.getElementById('orc_extras').value) || 0;
@@ -501,7 +442,6 @@ function renderCidades() {
       ? Math.max(1, Math.ceil((new Date(c.saida) - new Date(c.chegada)) / 86400000) + 1)
       : '—';
 
-    // conexão anterior (se não for a primeira cidade)
     const conexaoHtml = cIdx > 0 ? `
       <div class="conexao">
         ⬇️ Conexão: ${estado.cidades[cIdx-1].nome} → ${c.nome}
@@ -535,13 +475,6 @@ function renderCidades() {
         <span class="drag-handle" title="Arraste para reordenar">⋮⋮</span>
         <h3>${cIdx + 1}. ${c.nome} <small>(${diasCidade} dia(s) · ${c.locais.length} local(is))</small></h3>
         <button class="danger" onclick="removerCidade(${cIdx})">Remover</button>
-      </div>
-
-      <!-- Coordenadas -->
-      <div class="grid">
-        <div><label>Latitude</label><input id="cidade_lat_${cIdx}" type="number" step="any" value="${c.lat ?? ''}" placeholder="Ex: -23.55"></div>
-        <div><label>Longitude</label><input id="cidade_lng_${cIdx}" type="number" step="any" value="${c.lng ?? ''}" placeholder="Ex: -46.63"></div>
-        <div style="display:flex;align-items:flex-end;"><button class="small" onclick="setCoordenadas(${cIdx})">📍 Salvar no Mapa</button></div>
       </div>
 
       <!-- Transporte -->
@@ -599,8 +532,6 @@ function renderCidades() {
         <div><label>Categoria</label><select id="local_cat_${cIdx}">
           <option>Turismo</option><option>Gastronomia</option><option>Compras</option><option>Cultura</option><option>Natureza</option>
         </select></div>
-        <div><label>Lat (opcional)</label><input id="local_lat_${cIdx}" type="number" step="any" placeholder="Ex: 38.69"></div>
-        <div><label>Lng (opcional)</label><input id="local_lng_${cIdx}" type="number" step="any" placeholder="Ex: -9.21"></div>
       </div>
       <div class="actions"><button class="small" onclick="addLocal(${cIdx})">+ Local</button></div>
       <div style="margin-top:10px;">
@@ -609,7 +540,7 @@ function renderCidades() {
             <div class="item-row">
               <div class="item-info">
                 <div class="item-title">${l.nome} <span class="badge cinza">${l.cat}</span></div>
-                <div class="item-detail">${l.data || '—'} ${l.hora ? 'às ' + l.hora : ''}${l.lat ? ' 📍' : ''}</div>
+                <div class="item-detail">${l.data || '—'} ${l.hora ? 'às ' + l.hora : ''}</div>
               </div>
               <button class="danger" onclick="remover(${cIdx}, 'locais', ${i})">x</button>
             </div>`).join('')}
@@ -621,11 +552,9 @@ function renderCidades() {
 // ================= TIMELINE =================
 function renderTimeline() {
   const box = document.getElementById('timeline');
-
-  // Junta todos os eventos com data
   const eventos = [];
+
   estado.cidades.forEach(c => {
-    // chegada da cidade
     if (c.chegada) {
       eventos.push({
         data: c.chegada, hora: '', tipo: 'transporte',
@@ -664,14 +593,12 @@ function renderTimeline() {
     return;
   }
 
-  // Ordena por data e hora
   eventos.sort((a, b) => {
     const ka = (a.data || '') + ' ' + (a.hora || '00:00');
     const kb = (b.data || '') + ' ' + (b.hora || '00:00');
     return ka.localeCompare(kb);
   });
 
-  // Agrupa por dia
   const porDia = {};
   eventos.forEach(e => {
     if (!porDia[e.data]) porDia[e.data] = [];
@@ -774,51 +701,6 @@ function renderOrcamento() {
   `;
 }
 
-// ================= MAPA =================
-function atualizarMapa() {
-  if (!mapa) {
-    mapa = L.map('mapa').setView([20, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap', maxZoom: 19
-    }).addTo(mapa);
-    marcadoresLayer = L.layerGroup().addTo(mapa);
-  }
-  marcadoresLayer.clearLayers();
-
-  const cidadesComCoord = estado.cidades.filter(c => c.lat && c.lng);
-  if (cidadesComCoord.length === 0) return;
-
-  const pontos = [];
-  estado.cidades.forEach((c, i) => {
-    if (!c.lat || !c.lng) return;
-    pontos.push([c.lat, c.lng]);
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="background:#764ba2;color:white;border:2px solid white;border-radius:50%;
-             width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-             font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.4);">${i+1}</div>`,
-      iconSize: [32, 32], iconAnchor: [16, 16]
-    });
-    L.marker([c.lat, c.lng], { icon }).bindPopup(`<b>${c.nome}</b>`).addTo(marcadoresLayer);
-
-    // locais da cidade
-    c.locais.forEach(l => {
-      if (l.lat && l.lng) {
-        L.circleMarker([l.lat, l.lng], {
-          radius: 7, color: '#667eea', fillColor: '#667eea', fillOpacity: 0.7
-        }).bindPopup(`<b>${l.nome}</b><br>${l.cat}`).addTo(marcadoresLayer);
-      }
-    });
-  });
-
-  // linha entre cidades
-  if (pontos.length > 1) {
-    L.polyline(pontos, { color: '#667eea', weight: 3, dashArray: '8 8' }).addTo(marcadoresLayer);
-  }
-
-  mapa.fitBounds(pontos, { padding: [30, 30] });
-}
-
 // ================= DRAG & DROP =================
 let dragIdx = null;
 function onDragStart(e, idx) { dragIdx = idx; e.currentTarget.classList.add('dragging'); }
@@ -843,7 +725,6 @@ async function exportarPDF() {
   const ida = document.getElementById('dataIda').value;
   const volta = document.getElementById('dataVolta').value;
 
-  // cabeçalho
   pdf.setFillColor(102, 126, 234);
   pdf.rect(0, 0, pageW, 35, 'F');
   pdf.setTextColor(255, 255, 255);
@@ -857,12 +738,10 @@ async function exportarPDF() {
   y = 45;
   pdf.setTextColor(0, 0, 0);
 
-  // helper para nova página
   const checkPage = (need = 10) => {
     if (y + need > pageH - margin) { pdf.addPage(); y = margin; }
   };
 
-  // cidades
   for (let i = 0; i < estado.cidades.length; i++) {
     const c = estado.cidades[i];
     checkPage(40);
@@ -883,7 +762,6 @@ async function exportarPDF() {
       y += 6;
     }
 
-    // transporte
     if (c.transporte.length) {
       checkPage(8);
       pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
@@ -896,7 +774,6 @@ async function exportarPDF() {
       });
     }
 
-    // hotel
     if (c.hotel.length) {
       checkPage(8);
       pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
@@ -909,7 +786,6 @@ async function exportarPDF() {
       });
     }
 
-    // locais
     if (c.locais.length) {
       checkPage(8);
       pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
@@ -924,7 +800,6 @@ async function exportarPDF() {
     y += 5;
   }
 
-  // orçamento
   checkPage(30);
   pdf.setFillColor(240, 244, 255);
   pdf.rect(margin, y, pageW - 2*margin, 9, 'F');
@@ -974,7 +849,6 @@ async function exportarPDF() {
 function atualizarTudo() {
   gerarBagagem();
   render();
-  atualizarMapa();
 }
 
 // ================= AUTO-DIAS =================
@@ -992,7 +866,6 @@ function calcDias() {
 // ================= INIT =================
 carregarLocal();
 render();
-atualizarMapa();
 if (estado.bagagem.length === 0) gerarBagagem();
 </script>
 </body>
