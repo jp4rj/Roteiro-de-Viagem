@@ -12,31 +12,69 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
+  :root {
+    --bg-page: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-card: #ffffff;
+    --bg-card-alt: #fafbff;
+    --bg-input: #ffffff;
+    --bg-item: #f8f9fa;
+    --bg-hover: #eef1ff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-tertiary: #888888;
+    --text-muted: #999999;
+    --border: #dddddd;
+    --border-light: #f0f0f0;
+    --shadow: rgba(0, 0, 0, 0.15);
+    --shadow-hover: rgba(0, 0, 0, 0.2);
+  }
+
+  body.dark {
+    --bg-page: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    --bg-card: #1e1e2e;
+    --bg-card-alt: #252538;
+    --bg-input: #2a2a3e;
+    --bg-item: #2a2a3e;
+    --bg-hover: #33334a;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #71717a;
+    --text-muted: #52525b;
+    --border: #3f3f50;
+    --border-light: #2f2f42;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --shadow-hover: rgba(0, 0, 0, 0.7);
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, system-ui, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh; padding: 20px; color: #333;
+    background: var(--bg-page);
+    min-height: 100vh; padding: 20px; color: var(--text-primary);
+    transition: background 0.3s, color 0.3s;
   }
   .container { max-width: 1200px; margin: 0 auto; }
   h1 { color: white; text-align: center; margin-bottom: 20px; font-size: 2em; }
   .card {
-    background: white; border-radius: 12px; padding: 20px;
-    margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    background: var(--bg-card); border-radius: 12px; padding: 20px;
+    margin-bottom: 20px; box-shadow: 0 4px 20px var(--shadow);
+    transition: background 0.3s;
   }
   .card h2 {
     color: #667eea; margin-bottom: 15px; font-size: 1.2em;
-    border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;
+    border-bottom: 2px solid var(--border-light); padding-bottom: 8px;
     display: flex; justify-content: space-between; align-items: center;
   }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-  label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 4px; color: #555; }
+  label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 4px; color: var(--text-secondary); }
   input, select, textarea {
-    width: 100%; padding: 8px 10px; border: 1px solid #ddd;
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border);
     border-radius: 6px; font-size: 0.95em; font-family: inherit;
+    background: var(--bg-input); color: var(--text-primary);
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
   }
   input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; }
-  input:disabled, select:disabled { background: #f5f5f5; color: #666; }
+  input:disabled, select:disabled { background: var(--bg-item); color: var(--text-tertiary); }
   textarea { resize: vertical; min-height: 38px; }
   button {
     background: #667eea; color: white; border: none; padding: 10px 20px;
@@ -44,51 +82,53 @@
     font-weight: 600; transition: background 0.2s;
   }
   button:hover { background: #5568d3; }
-  button.secondary { background: #e0e0e0; color: #333; }
-  button.secondary:hover { background: #d0d0d0; }
-  button.danger { background: #ff4757; padding: 6px 12px; font-size: 0.85em; }
+  button.secondary { background: var(--bg-item); color: var(--text-primary); }
+  button.secondary:hover { background: var(--bg-hover); }
+  button.danger { background: #ff4757; padding: 6px 12px; font-size: 0.85em; color: white; }
   button.danger:hover { background: #ee3546; }
   button.small { padding: 6px 12px; font-size: 0.85em; }
-  button.success { background: #10b981; }
+  button.success { background: #10b981; color: white; }
   button.success:hover { background: #059669; }
-  button.edit { background: #f59e0b; padding: 6px 12px; font-size: 0.85em; }
+  button.edit { background: #f59e0b; padding: 6px 12px; font-size: 0.85em; color: white; }
   button.edit:hover { background: #d97706; }
   .item-row {
     display: flex; gap: 8px; align-items: center; padding: 10px;
-    background: #f8f9fa; border-radius: 6px; margin-bottom: 8px;
+    background: var(--bg-item); border-radius: 6px; margin-bottom: 8px;
+    color: var(--text-primary);
   }
   .item-row .item-info { flex: 1; }
   .item-row .item-title { font-weight: 600; }
-  .item-row .item-detail { font-size: 0.85em; color: #666; }
-  .item-row.editando { background: #fff8e1; border: 2px solid #f59e0b; }
+  .item-row .item-detail { font-size: 0.85em; color: var(--text-secondary); }
+  .item-row.editando { background: rgba(245, 158, 11, 0.12); border: 2px solid #f59e0b; }
   .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .badge {
     display: inline-block; background: #667eea; color: white;
     padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;
   }
-  .badge.cinza { background: #999; }
-  .badge.editando { background: #f59e0b; }
+  .badge.cinza { background: var(--text-tertiary); }
   .bagagem-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
   .bagagem-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-  .bagagem-item label { margin: 0; cursor: pointer; font-weight: normal; }
-  .bagagem-item.done label { text-decoration: line-through; color: #999; }
-  .empty { color: #999; font-style: italic; padding: 10px; text-align: center; }
+  .bagagem-item label { margin: 0; cursor: pointer; font-weight: normal; color: var(--text-primary); }
+  .bagagem-item.done label { text-decoration: line-through; color: var(--text-muted); }
+  .empty { color: var(--text-muted); font-style: italic; padding: 10px; text-align: center; }
 
   .cidade-card {
-    background: #fafbff; border: 2px solid #e0e6ff;
+    background: var(--bg-card-alt); border: 2px solid var(--border-light);
     border-radius: 10px; padding: 15px; margin-bottom: 15px; position: relative;
+    color: var(--text-primary);
+    transition: background 0.3s;
   }
   .cidade-card.dragging { opacity: 0.4; }
-  .cidade-card.drag-over { border-color: #667eea; background: #eef1ff; }
+  .cidade-card.drag-over { border-color: #667eea; background: var(--bg-hover); }
   .cidade-header {
     display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #ccc;
+    margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed var(--border);
     gap: 10px; flex-wrap: wrap;
   }
-  .cidade-header h3 { color: #764ba2; font-size: 1.1em; flex: 1; }
-  .cidade-header small { color: #888; font-weight: normal; font-size: 0.85em; }
+  .cidade-header h3 { color: #a78bfa; font-size: 1.1em; flex: 1; }
+  .cidade-header small { color: var(--text-tertiary); font-weight: normal; font-size: 0.85em; }
   .drag-handle {
-    cursor: grab; font-size: 1.4em; color: #999; user-select: none; padding: 0 8px;
+    cursor: grab; font-size: 1.4em; color: var(--text-tertiary); user-select: none; padding: 0 8px;
   }
   .drag-handle:active { cursor: grabbing; }
   .subtitulo {
@@ -100,15 +140,16 @@
   .subtitulo.volta::before { background: #ef4444; }
 
   .conexao-box {
-    background: #fff8f0; border: 2px dashed #ffb74d;
+    background: rgba(255, 183, 77, 0.1); border: 2px dashed #ffb74d;
     border-radius: 10px; padding: 12px; margin: 12px 0;
   }
   .conexao-box .conexao-titulo {
     color: #e65100; font-weight: 700; font-size: 0.95em;
     margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
   }
+  body.dark .conexao-box .conexao-titulo { color: #ffb74d; }
   .conexao-box .conexao-hint {
-    font-size: 0.78em; color: #999; margin-top: 6px; font-style: italic;
+    font-size: 0.78em; color: var(--text-muted); margin-top: 6px; font-style: italic;
   }
 
   .timeline { position: relative; padding-left: 30px; margin-top: 15px; }
@@ -120,16 +161,17 @@
   .timeline-dia::before {
     content: ''; position: absolute; left: -26px; top: 6px;
     width: 14px; height: 14px; background: #667eea;
-    border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 2px #667eea;
+    border: 3px solid var(--bg-card); border-radius: 50%; box-shadow: 0 0 0 2px #667eea;
   }
   .timeline-dia h4 {
-    color: #764ba2; font-size: 1em; margin-bottom: 8px;
-    background: #f0f4ff; padding: 6px 10px; border-radius: 6px;
+    color: #a78bfa; font-size: 1em; margin-bottom: 8px;
+    background: var(--bg-hover); padding: 6px 10px; border-radius: 6px;
   }
   .timeline-evento {
-    background: white; padding: 8px 12px; border-radius: 6px;
+    background: var(--bg-card); padding: 8px 12px; border-radius: 6px;
     margin-bottom: 6px; border-left: 3px solid #667eea;
     font-size: 0.9em; display: flex; gap: 8px; align-items: center;
+    color: var(--text-primary);
   }
   .timeline-evento .hora { font-weight: 700; color: #667eea; min-width: 55px; }
   .timeline-evento.transporte { border-left-color: #f59e0b; }
@@ -143,21 +185,21 @@
     gap: 12px; margin-top: 12px;
   }
   .orcamento-item {
-    background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 4px solid #667eea;
+    background: var(--bg-item); padding: 12px; border-radius: 8px; border-left: 4px solid #667eea;
   }
-  .orcamento-item .label { font-size: 0.8em; color: #666; text-transform: uppercase; font-weight: 600; }
-  .orcamento-item .valor { font-size: 1.3em; font-weight: 700; color: #333; margin-top: 4px; }
+  .orcamento-item .label { font-size: 0.8em; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+  .orcamento-item .valor { font-size: 1.3em; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
   .orcamento-item.transporte { border-left-color: #f59e0b; }
   .orcamento-item.hotel { border-left-color: #10b981; }
   .orcamento-item.alimentacao { border-left-color: #ef4444; }
   .orcamento-item.passeios { border-left-color: #8b5cf6; }
-  .orcamento-item.total { border-left-color: #667eea; background: #eef1ff; }
+  .orcamento-item.total { border-left-color: #667eea; background: var(--bg-hover); }
 
   .fab {
     position: fixed; bottom: 20px; right: 20px;
     width: 60px; height: 60px; border-radius: 50%;
     background: #ef4444; color: white; font-size: 1.5em;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000;
+    box-shadow: 0 4px 15px var(--shadow); z-index: 1000;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; border: none;
   }
@@ -166,9 +208,67 @@
   .topbar {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+    padding-right: 70px;
   }
   .topbar h1 { color: white; margin: 0; font-size: 1.8em; }
   .topbar-acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ===== BOTÃO DE TEMA ===== */
+  .btn-tema {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    box-shadow: 0 4px 15px var(--shadow);
+    font-size: 1.3em;
+    z-index: 1500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, background 0.3s;
+    padding: 0;
+  }
+  .btn-tema:hover { transform: scale(1.1); background: var(--bg-card-alt); }
+  .btn-tema:active { transform: scale(0.95); }
+
+  .menu-tema {
+    position: fixed;
+    top: 78px;
+    right: 20px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    box-shadow: 0 8px 25px var(--shadow-hover);
+    padding: 8px;
+    z-index: 1499;
+    display: none;
+    min-width: 160px;
+    border: 1px solid var(--border-light);
+  }
+  .menu-tema.ativo { display: block; }
+  .menu-tema button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    background: transparent;
+    color: var(--text-primary);
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.9em;
+    transition: background 0.15s;
+    border: none;
+  }
+  .menu-tema button:hover { background: var(--bg-hover); }
+  .menu-tema button.ativo {
+    background: #667eea;
+    color: white;
+  }
 
   /* MODO VISUALIZAÇÃO */
   .modo-view .form-add,
@@ -177,22 +277,22 @@
   .modo-view .btn-edit { display: none !important; }
 
   .aviso-modo {
-    background: #e8f5e9; border-left: 4px solid #10b981;
+    background: rgba(16, 185, 129, 0.15); border-left: 4px solid #10b981;
     padding: 10px 15px; border-radius: 6px; margin-bottom: 15px;
-    font-size: 0.9em; color: #2e7d32; display: flex;
+    font-size: 0.9em; color: #10b981; display: flex;
     align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
   }
   .aviso-modo.edicao {
-    background: #fff8e1; border-left-color: #f59e0b; color: #b45309;
+    background: rgba(245, 158, 11, 0.15); border-left-color: #f59e0b; color: #f59e0b;
   }
 
   .viagem-card {
-    background: white; border-radius: 12px; overflow: hidden;
-    margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    transition: transform 0.15s, box-shadow 0.15s;
+    background: var(--bg-card); border-radius: 12px; overflow: hidden;
+    margin-bottom: 16px; box-shadow: 0 4px 15px var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.3s;
   }
   .viagem-card:hover {
-    transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    transform: translateY(-3px); box-shadow: 0 8px 25px var(--shadow-hover);
   }
   .viagem-card .capa {
     width: 100%; height: 160px; background-size: cover; background-position: center;
@@ -238,11 +338,11 @@
   }
   .viagem-card .corpo { padding: 16px; }
   .viagem-card .meta {
-    font-size: 0.88em; color: #666; margin-bottom: 12px; line-height: 1.6;
+    font-size: 0.88em; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.6;
   }
   .viagem-card .botoes { display: flex; gap: 6px; flex-wrap: wrap; }
   .viagem-card.vazia {
-    padding: 40px; text-align: center; color: #999;
+    padding: 40px; text-align: center; color: var(--text-muted);
   }
   .viagem-card.vazia:hover { transform: none; }
 
@@ -254,13 +354,13 @@
   }
   .banner-offline.ativo { display: block; }
 
-  /* BACKUP */
   .backup-area {
     display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
   }
   .backup-area input[type="file"] {
-    padding: 8px; border: 2px dashed #ddd; border-radius: 6px;
-    font-size: 0.85em; cursor: pointer; background: #fafafa;
+    padding: 8px; border: 2px dashed var(--border); border-radius: 6px;
+    font-size: 0.85em; cursor: pointer; background: var(--bg-item);
+    color: var(--text-primary);
   }
 
   @media (max-width: 600px) {
@@ -269,12 +369,21 @@
     .timeline { padding-left: 24px; }
     .viagem-card .capa { height: 130px; }
     .viagem-card .capa .titulo-capa { font-size: 1em; }
+    .topbar { padding-right: 70px; }
+    .topbar h1 { font-size: 1.3em; }
   }
 </style>
 </head>
 <body>
 
 <div id="bannerOffline" class="banner-offline">📡 Você está offline — modo cache ativo</div>
+
+<button class="btn-tema" id="btnTema" onclick="toggleMenuTema()" title="Tema">☀️</button>
+<div class="menu-tema" id="menuTema">
+  <button data-tema="claro" onclick="definirTema('claro')">☀️ Claro</button>
+  <button data-tema="escuro" onclick="definirTema('escuro')">🌙 Escuro</button>
+  <button data-tema="auto" onclick="definirTema('auto')">🔄 Automático</button>
+</div>
 
 <!-- ==================== TELA: LISTA DE VIAGENS ==================== -->
 <div id="telaLista" class="container">
@@ -333,7 +442,7 @@
 
   <div class="card">
     <h2>🏙️ Cidades da Viagem <span class="badge" id="badgeCidades">0</span></h2>
-    <p style="font-size:0.85em;color:#888;margin-bottom:10px;">💡 Arraste o ícone <strong>⋮⋮</strong> para reordenar. A 1ª cidade com foto vira capa do card na lista.</p>
+    <p style="font-size:0.85em;color:var(--text-tertiary);margin-bottom:10px;">💡 Arraste o ícone <strong>⋮⋮</strong> para reordenar. A 1ª cidade com foto vira capa do card na lista.</p>
     <div class="grid form-add">
       <div><label>Nome da cidade</label><input id="cidade_nome" placeholder="Ex: Lisboa"></div>
       <div><label>Chegada</label><input id="cidade_chegada" type="date"></div>
@@ -374,7 +483,70 @@
 // ===================== ESTADO GLOBAL =====================
 let store = { viagens: {}, atual: null };
 let estado = null;
-let modoEdicao = false; // false = visualização, true = edição
+let modoEdicao = false;
+
+// ===================== TEMA =====================
+const TEMA_KEY = 'temaViagem';
+
+function getTemaPreferido() {
+  return localStorage.getItem(TEMA_KEY) || 'auto';
+}
+
+function temaEfetivo(tema) {
+  if (tema === 'escuro') return 'escuro';
+  if (tema === 'claro') return 'claro';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+}
+
+function aplicarTema() {
+  const tema = getTemaPreferido();
+  const efetivo = temaEfetivo(tema);
+  document.body.classList.toggle('dark', efetivo === 'escuro');
+
+  const btn = document.getElementById('btnTema');
+  if (btn) {
+    btn.textContent = efetivo === 'escuro' ? '🌙' : '☀️';
+  }
+
+  document.querySelectorAll('.menu-tema button').forEach(b => {
+    b.classList.toggle('ativo', b.dataset.tema === tema);
+  });
+
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute('content', efetivo === 'escuro' ? '#1a1a2e' : '#667eea');
+  }
+}
+
+function definirTema(tema) {
+  localStorage.setItem(TEMA_KEY, tema);
+  aplicarTema();
+  fecharMenuTema();
+}
+
+function toggleMenuTema() {
+  const menu = document.getElementById('menuTema');
+  menu.classList.toggle('ativo');
+}
+
+function fecharMenuTema() {
+  const menu = document.getElementById('menuTema');
+  if (menu) menu.classList.remove('ativo');
+}
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('menuTema');
+  const btn = document.getElementById('btnTema');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    fecharMenuTema();
+  }
+});
+
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (getTemaPreferido() === 'auto') aplicarTema();
+  });
+}
 
 // ===================== PERSISTÊNCIA =====================
 function carregarStore() {
@@ -430,9 +602,7 @@ function restaurarBackup(event) {
         `Cancelar = SUBSTITUIR (apaga tudo e usa só o backup)`
       );
       if (escolha) {
-        // mesclar
         Object.entries(dados.viagens).forEach(([id, v]) => {
-          // se já existir o ID, gera novo ID para não sobrescrever
           if (store.viagens[id]) {
             const novoId = gerarId();
             v.id = novoId;
@@ -442,7 +612,6 @@ function restaurarBackup(event) {
           }
         });
       } else {
-        // substituir
         if (!confirm('⚠️ Tem certeza? Todas as viagens atuais serão apagadas.')) return;
         store.viagens = dados.viagens;
         store.atual = null;
@@ -455,7 +624,7 @@ function restaurarBackup(event) {
     }
   };
   reader.readAsText(file);
-  event.target.value = ''; // permite reenviar o mesmo arquivo
+  event.target.value = '';
 }
 
 // ===================== FOTOS (Wikipedia) =====================
@@ -482,7 +651,6 @@ async function buscarFotoCidade(nomeCidade) {
   const chave = nomeCidade.trim().toLowerCase();
   if (!chave) return null;
   if (fotoCache.has(chave)) return fotoCache.get(chave);
-
   for (const lang of ['pt', 'en']) {
     try {
       const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(nomeCidade.trim())}`;
@@ -658,7 +826,6 @@ function novaViagem() {
     }
   };
   persistirStore();
-  // primeira vez: entra em modo EDIÇÃO
   abrirViagem(id, true);
 }
 
@@ -689,7 +856,6 @@ function abrirViagem(id, forcarEdicao) {
     return nova;
   });
   estado._editando = null;
-  // modo: primeira vez (nova viagem) = edição; senão = visualização
   modoEdicao = !!forcarEdicao;
   carregarEstadoNoForm();
   document.getElementById('telaLista').style.display = 'none';
@@ -739,11 +905,9 @@ function voltarParaLista() {
 // ===================== ALTERNAR MODO =====================
 function alternarModo() {
   if (modoEdicao) {
-    // sair da edição → visualização (salva)
     salvarViagemAtual(true);
     modoEdicao = false;
   } else {
-    // entrar em edição
     modoEdicao = true;
   }
   aplicarModo();
@@ -767,7 +931,6 @@ function aplicarModo() {
       <span>✏️ <strong>Modo Edição</strong> — você pode adicionar, editar e excluir.</span>
       <button class="small secondary" onclick="alternarModo()">👁️ Ir para Visualização</button>
     `;
-    // habilita inputs de configuração
     ['destino','dataIda','dataVolta','dias','tipoViagem','clima','orc_alimentacao','orc_passeios','orc_extras'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.disabled = false;
@@ -783,7 +946,6 @@ function aplicarModo() {
       <span>👁️ <strong>Modo Visualização</strong> — só leitura.</span>
       <button class="small" onclick="alternarModo()">✏️ Editar Viagem</button>
     `;
-    // desabilita inputs de configuração
     ['destino','dataIda','dataVolta','dias','tipoViagem','clima','orc_alimentacao','orc_passeios','orc_extras'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.disabled = true;
@@ -976,7 +1138,6 @@ function remover(cIdx, tipo, i) {
 function iniciarEdicao(cIdx, tipo, idx) {
   salvarRascunhos();
   estado.cidades[cIdx]._editando = { tipo, idx };
-  // também guarda os valores atuais em rascunho de edição
   const c = estado.cidades[cIdx];
   let item;
   if (tipo === 'chegada') item = c.transporte[idx];
@@ -987,7 +1148,6 @@ function iniciarEdicao(cIdx, tipo, idx) {
   else if (tipo === 'cidade') item = { nome: c.nome, chegada: c.chegada, saida: c.saida };
   c._editandoValores = JSON.parse(JSON.stringify(item || {}));
   render();
-  // scroll até o item
   setTimeout(() => {
     const el = document.getElementById(`edicao_${tipo}_${cIdx}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1151,7 +1311,6 @@ function renderCidades() {
     const rCx = c._rascunhoConexao || {};
     const rV = c._rascunhoVolta || {};
 
-    // ===== Header da cidade =====
     const cidadeEditando = ed && ed.tipo === 'cidade';
     const headerCidadeHtml = cidadeEditando ? `
       <div class="cidade-header">
@@ -1174,7 +1333,6 @@ function renderCidades() {
       </div>
     `;
 
-    // ===== Conexão =====
     let conexaoHtml = '';
     if (!isPrimeira) {
       const conexaoEditando = ed && ed.tipo === 'conexao';
@@ -1219,14 +1377,14 @@ function renderCidades() {
                 <button class="small" onclick="salvarConexao(${cIdx})">💾 Salvar Conexão</button>
               </div>
             ` : ''}
-            ${!c.conexao ? `<div class="conexao-hint">${modoEdicao ? 'Sem conexão registrada' : 'Sem conexão registrada'}</div>` :
+            ${!c.conexao ? `<div class="conexao-hint">Sem conexão registrada</div>` :
               `<div class="item-row" style="border-left:3px solid #e65100;${modoEdicao ? 'margin-top:10px;' : ''}">
                 <div class="item-info">
                   <div class="item-title">${c.conexao.tipo} - ${c.conexao.empresa || '—'}</div>
                   <div class="item-detail">
                     ${c.conexao.data || '—'} | R$ ${c.conexao.custo.toFixed(2)}
                     ${c.conexao.voucher ? ` | 🎟️ ${escapeHtml(c.conexao.voucher)}` : ''}
-                    ${c.conexao.obs ? `<br><em style="color:#999;">${escapeHtml(c.conexao.obs)}</em>` : ''}
+                    ${c.conexao.obs ? `<br><em style="color:var(--text-muted);">${escapeHtml(c.conexao.obs)}</em>` : ''}
                   </div>
                 </div>
                 <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'conexao')">✏️</button>
@@ -1237,13 +1395,11 @@ function renderCidades() {
       }
     }
 
-    // ===== Chegada (1ª cidade) =====
     let chegadaHtml = '';
     if (isPrimeira) {
-      const chegadaEditando = ed && ed.tipo === 'chegada';
       chegadaHtml = `
         <div class="subtitulo">🛫 Chegada em ${c.nome}</div>
-        ${modoEdicao && !chegadaEditando ? `
+        ${modoEdicao ? `
           <div class="grid form-add">
             <div><label>Tipo</label><select id="chegada_tipo_${cIdx}">
               ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
@@ -1298,7 +1454,6 @@ function renderCidades() {
       `;
     }
 
-    // ===== Volta (última) =====
     let voltaHtml = '';
     if (isUltima) {
       const voltaEditando = ed && ed.tipo === 'volta';
@@ -1360,7 +1515,6 @@ function renderCidades() {
       }
     }
 
-    // ===== Hotel =====
     const hoteisHtml = c.hotel.map((h, i) => {
       const editando = ed && ed.tipo === 'hotel' && ed.idx === i;
       if (editando) {
@@ -1392,7 +1546,6 @@ function renderCidades() {
         </div>`;
     }).join('');
 
-    // ===== Local =====
     const locaisHtml = c.locais.map((l, i) => {
       const editando = ed && ed.tipo === 'local' && ed.idx === i;
       if (editando) {
@@ -1529,7 +1682,7 @@ function renderTimeline() {
           <div class="timeline-evento ${e.tipo}">
             <span class="hora">${e.hora || '—'}</span>
             <strong>${e.titulo}</strong>
-            ${e.sub ? `<span style="color:#888;font-size:0.85em;">· ${e.sub}</span>` : ''}
+            ${e.sub ? `<span style="color:var(--text-tertiary);font-size:0.85em;">· ${e.sub}</span>` : ''}
           </div>
         `).join('')}
       </div>`;
@@ -1768,6 +1921,7 @@ window.addEventListener('offline', atualizarBannerOffline);
 carregarStore();
 carregarFotoCache();
 atualizarBannerOffline();
+aplicarTema();
 mostrarLista();
 </script>
 </body>
