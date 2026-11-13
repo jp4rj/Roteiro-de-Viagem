@@ -3,17 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#667eea">
 <title>Planejador de Viagem</title>
+
+<!-- Leaflet (mapa) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- jsPDF + html2canvas (PDF) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, system-ui, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
-    color: #333;
+    min-height: 100vh; padding: 20px; color: #333;
   }
-  .container { max-width: 1100px; margin: 0 auto; }
+  .container { max-width: 1200px; margin: 0 auto; }
   h1 { color: white; text-align: center; margin-bottom: 20px; font-size: 2em; }
   .card {
     background: white; border-radius: 12px; padding: 20px;
@@ -42,6 +50,8 @@
   button.danger { background: #ff4757; padding: 6px 12px; font-size: 0.85em; }
   button.danger:hover { background: #ee3546; }
   button.small { padding: 6px 12px; font-size: 0.85em; }
+  button.success { background: #10b981; }
+  button.success:hover { background: #059669; }
   .item-row {
     display: flex; gap: 8px; align-items: center; padding: 10px;
     background: #f8f9fa; border-radius: 6px; margin-bottom: 8px;
@@ -66,26 +76,108 @@
   .bagagem-item.done label { text-decoration: line-through; color: #999; }
   .empty { color: #999; font-style: italic; padding: 10px; text-align: center; }
 
-  /* CIDADE */
   .cidade-card {
     background: #fafbff; border: 2px solid #e0e6ff;
     border-radius: 10px; padding: 15px; margin-bottom: 15px;
+    position: relative;
   }
+  .cidade-card.dragging { opacity: 0.4; }
+  .cidade-card.drag-over { border-color: #667eea; background: #eef1ff; }
   .cidade-header {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #ccc;
+    gap: 10px; flex-wrap: wrap;
   }
-  .cidade-header h3 { color: #764ba2; font-size: 1.1em; }
+  .cidade-header h3 { color: #764ba2; font-size: 1.1em; flex: 1; }
   .cidade-header small { color: #888; font-weight: normal; font-size: 0.85em; }
+  .drag-handle {
+    cursor: grab; font-size: 1.4em; color: #999; user-select: none;
+    padding: 0 8px;
+  }
+  .drag-handle:active { cursor: grabbing; }
   .subtitulo {
     font-size: 0.9em; color: #667eea; font-weight: 700;
     margin: 15px 0 8px; display: flex; align-items: center; gap: 8px;
   }
   .subtitulo::before { content: ''; width: 4px; height: 16px; background: #667eea; border-radius: 2px; }
 
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 30px; margin-top: 15px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 3px; background: linear-gradient(180deg, #667eea, #764ba2);
+    border-radius: 2px;
+  }
+  .timeline-dia { margin-bottom: 20px; position: relative; }
+  .timeline-dia::before {
+    content: ''; position: absolute; left: -26px; top: 6px;
+    width: 14px; height: 14px; background: #667eea;
+    border: 3px solid white; border-radius: 50%;
+    box-shadow: 0 0 0 2px #667eea;
+  }
+  .timeline-dia h4 {
+    color: #764ba2; font-size: 1em; margin-bottom: 8px;
+    background: #f0f4ff; padding: 6px 10px; border-radius: 6px;
+  }
+  .timeline-evento {
+    background: white; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; border-left: 3px solid #667eea;
+    font-size: 0.9em; display: flex; gap: 8px; align-items: center;
+  }
+  .timeline-evento .hora {
+    font-weight: 700; color: #667eea; min-width: 55px;
+  }
+  .timeline-evento.transporte { border-left-color: #f59e0b; }
+  .timeline-evento.hotel { border-left-color: #10b981; }
+  .timeline-evento.local { border-left-color: #667eea; }
+
+  /* MAPA */
+  #mapa { height: 400px; border-radius: 10px; margin-top: 10px; z-index: 1; }
+
+  /* ORÇAMENTO */
+  .orcamento-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px; margin-top: 12px;
+  }
+  .orcamento-item {
+    background: #f8f9fa; padding: 12px; border-radius: 8px;
+    border-left: 4px solid #667eea;
+  }
+  .orcamento-item .label { font-size: 0.8em; color: #666; text-transform: uppercase; font-weight: 600; }
+  .orcamento-item .valor { font-size: 1.3em; font-weight: 700; color: #333; margin-top: 4px; }
+  .orcamento-item.transporte { border-left-color: #f59e0b; }
+  .orcamento-item.hotel { border-left-color: #10b981; }
+  .orcamento-item.alimentacao { border-left-color: #ef4444; }
+  .orcamento-item.passeios { border-left-color: #8b5cf6; }
+  .orcamento-item.total { border-left-color: #667eea; background: #eef1ff; }
+
+  /* CONEXAO ENTRE CIDADES */
+  .conexao {
+    text-align: center; padding: 8px; margin: 8px 0;
+    background: #fff3e0; border-radius: 8px;
+    color: #e65100; font-size: 0.85em; font-weight: 600;
+    border: 2px dashed #ffb74d;
+  }
+
+  /* BOTÃO FLUTUANTE PDF */
+  .fab {
+    position: fixed; bottom: 20px; right: 20px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: #ef4444; color: white; font-size: 1.5em;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: none;
+  }
+  .fab:hover { background: #dc2626; transform: scale(1.05); }
+
+  /* PDF PRINT AREA */
+  #printArea { display: none; }
+  #printArea .page { padding: 20mm; font-family: Arial, sans-serif; color: #000; }
+
   @media (max-width: 600px) {
     .item-row { flex-wrap: wrap; }
     h1 { font-size: 1.5em; }
+    .timeline { padding-left: 24px; }
   }
 </style>
 </head>
@@ -93,44 +185,27 @@
 <div class="container">
   <h1>✈️ Planejador de Viagem</h1>
 
-  <!-- ========== CONFIGURAÇÃO DA VIAGEM ========== -->
+  <!-- ========== CONFIGURAÇÃO ========== -->
   <div class="card">
     <h2>🎯 Configuração da Viagem</h2>
     <div class="grid">
-      <div>
-        <label>Nome / Destino geral</label>
-        <input id="destino" placeholder="Ex: Europa 2026, Nordeste, Itália...">
-      </div>
-      <div>
-        <label>Data de ida</label>
-        <input id="dataIda" type="date">
-      </div>
-      <div>
-        <label>Data de volta</label>
-        <input id="dataVolta" type="date">
-      </div>
-      <div>
-        <label>Quantidade de dias</label>
-        <input id="dias" type="number" min="1" value="3">
-      </div>
+      <div><label>Nome / Destino geral</label><input id="destino" placeholder="Ex: Europa 2026"></div>
+      <div><label>Data de ida</label><input id="dataIda" type="date"></div>
+      <div><label>Data de volta</label><input id="dataVolta" type="date"></div>
+      <div><label>Quantidade de dias</label><input id="dias" type="number" min="1" value="3"></div>
       <div>
         <label>Tipo de viagem</label>
         <select id="tipoViagem">
-          <option value="lazer">Lazer</option>
-          <option value="negocios">Negócios</option>
-          <option value="aventura">Aventura</option>
-          <option value="praia">Praia</option>
-          <option value="cultural">Cultural</option>
-          <option value="mochilao">Mochilão</option>
+          <option value="lazer">Lazer</option><option value="negocios">Negócios</option>
+          <option value="aventura">Aventura</option><option value="praia">Praia</option>
+          <option value="cultural">Cultural</option><option value="mochilao">Mochilão</option>
         </select>
       </div>
       <div>
         <label>Clima esperado</label>
         <select id="clima">
-          <option value="quente">Quente</option>
-          <option value="frio">Frio</option>
-          <option value="ameno">Ameno</option>
-          <option value="chuva">Chuvoso</option>
+          <option value="quente">Quente</option><option value="frio">Frio</option>
+          <option value="ameno">Ameno</option><option value="chuva">Chuvoso</option>
         </select>
       </div>
     </div>
@@ -142,60 +217,83 @@
 
   <!-- ========== CIDADES ========== -->
   <div class="card">
-    <h2>
-      🏙️ Cidades da Viagem
-      <span class="badge" id="badgeCidades">0 cidades</span>
-    </h2>
+    <h2>🏙️ Cidades da Viagem <span class="badge" id="badgeCidades">0</span></h2>
+    <p style="font-size:0.85em;color:#888;margin-bottom:10px;">💡 Arraste o ícone <strong>⋮⋮</strong> para reordenar a sequência das cidades.</p>
+    <div class="grid">
+      <div><label>Nome da cidade</label><input id="cidade_nome" placeholder="Ex: Lisboa"></div>
+      <div><label>Chegada</label><input id="cidade_chegada" type="date"></div>
+      <div><label>Saída</label><input id="cidade_saida" type="date"></div>
+    </div>
+    <div class="actions"><button onclick="addCidade()">+ Adicionar Cidade</button></div>
+    <div id="listaCidades" style="margin-top:15px;"></div>
+  </div>
 
-    <!-- Formulário de nova cidade -->
+  <!-- ========== ROTEIRO POR DIA ========== -->
+  <div class="card">
+    <h2>📅 Roteiro por Dia (Timeline)</h2>
+    <div id="timeline"></div>
+  </div>
+
+  <!-- ========== MAPA ========== -->
+  <div class="card">
+    <h2>🗺️ Mapa da Viagem</h2>
+    <p style="font-size:0.85em;color:#888;margin-bottom:8px;">
+      Cidades e locais aparecem no mapa. Clique em "Atualizar Mapa" após adicionar coordenadas.
+    </p>
+    <div class="actions" style="margin-bottom:8px;">
+      <button class="small" onclick="atualizarMapa()">📍 Atualizar Mapa</button>
+    </div>
+    <div id="mapa"></div>
+  </div>
+
+  <!-- ========== ORÇAMENTO DETALHADO ========== -->
+  <div class="card">
+    <h2>💰 Orçamento Detalhado</h2>
     <div class="grid">
       <div>
-        <label>Nome da cidade</label>
-        <input id="cidade_nome" placeholder="Ex: Lisboa">
+        <label>Alimentação (R$/dia por pessoa)</label>
+        <input id="orc_alimentacao" type="number" value="150" onchange="render()">
       </div>
       <div>
-        <label>Chegada</label>
-        <input id="cidade_chegada" type="date">
+        <label>Passeios (R$ total)</label>
+        <input id="orc_passeios" type="number" value="500" onchange="render()">
       </div>
       <div>
-        <label>Saída</label>
-        <input id="cidade_saida" type="date">
+        <label>Extras (compras, imprevistos)</label>
+        <input id="orc_extras" type="number" value="300" onchange="render()">
       </div>
     </div>
-    <div class="actions">
-      <button onclick="addCidade()">+ Adicionar Cidade</button>
-    </div>
-
-    <!-- Lista de cidades -->
-    <div id="listaCidades" style="margin-top:15px;"></div>
+    <div id="orcamento" class="orcamento-grid"></div>
   </div>
 
   <!-- ========== BAGAGEM ========== -->
   <div class="card">
     <h2>🎒 Bagagem <span class="badge" id="badgeBagagem">0 itens</span></h2>
-    <p style="font-size:0.85em;color:#666;margin-bottom:12px;">
-      Gerada automaticamente com base no <strong>tipo de viagem</strong>, <strong>dias totais</strong> e <strong>clima</strong>.
-    </p>
     <div class="actions" style="margin-bottom:12px;">
       <button onclick="gerarBagagem()">🔄 Regenerar</button>
-      <button class="secondary" onclick="limparBagagem()">🗑️ Limpar Tudo</button>
+      <button class="secondary" onclick="limparBagagem()">🗑️ Limpar</button>
     </div>
     <div id="listaBagagem"></div>
-    <div class="summary" id="resumoViagem"></div>
   </div>
 </div>
 
-<script>
-// ===== ESTADO =====
-let estado = {
-  transporte: [],   // legado / global (opcional)
-  hotel: [],        // legado / global (opcional)
-  local: [],        // legado / global (opcional)
-  bagagem: [],
-  cidades: []       // { nome, chegada, saida, transporte[], hotel[], locais[] }
-};
+<!-- FAB Exportar PDF -->
+<button class="fab" onclick="exportarPDF()" title="Exportar PDF">📄</button>
 
-// ===== PERSISTÊNCIA =====
+<!-- Área invisível para o PDF -->
+<div id="printArea"></div>
+
+<script>
+// ================= ESTADO =================
+let estado = {
+  bagagem: [],
+  cidades: [],
+  orcamento: { alimentacao: 150, passeios: 500, extras: 300 }
+};
+let mapa = null;
+let marcadoresLayer = null;
+
+// ================= PERSISTÊNCIA =================
 function salvarLocal() {
   localStorage.setItem('viagemApp', JSON.stringify(estado));
   alert('✅ Dados salvos!');
@@ -206,8 +304,8 @@ function carregarLocal() {
     try {
       const parsed = JSON.parse(dados);
       estado = { ...estado, ...parsed };
-      // garantir que cidades exista
       if (!estado.cidades) estado.cidades = [];
+      if (!estado.orcamento) estado.orcamento = { alimentacao: 150, passeios: 500, extras: 300 };
       estado.cidades.forEach(c => {
         if (!c.transporte) c.transporte = [];
         if (!c.hotel) c.hotel = [];
@@ -215,29 +313,45 @@ function carregarLocal() {
       });
     } catch(e) {}
   }
+  // restaurar campos de orçamento
+  if (estado.orcamento) {
+    document.getElementById('orc_alimentacao').value = estado.orcamento.alimentacao;
+    document.getElementById('orc_passeios').value = estado.orcamento.passeios;
+    document.getElementById('orc_extras').value = estado.orcamento.extras;
+  }
 }
 
-// ===== CIDADE =====
+// ================= CIDADES =================
 function addCidade() {
   const nome = document.getElementById('cidade_nome').value.trim();
   const chegada = document.getElementById('cidade_chegada').value;
   const saida = document.getElementById('cidade_saida').value;
   if (!nome) return alert('Informe o nome da cidade.');
-  estado.cidades.push({ nome, chegada, saida, transporte: [], hotel: [], locais: [] });
+  estado.cidades.push({
+    nome, chegada, saida,
+    transporte: [], hotel: [], locais: [],
+    lat: null, lng: null,
+    conexao: null // { deCidade, tipo, custo }
+  });
   document.getElementById('cidade_nome').value = '';
   document.getElementById('cidade_chegada').value = '';
   document.getElementById('cidade_saida').value = '';
   render();
 }
-
 function removerCidade(idx) {
   if (confirm('Remover cidade e tudo dentro dela?')) {
     estado.cidades.splice(idx, 1);
     render();
   }
 }
+function moverCidade(from, to) {
+  if (from === to) return;
+  const item = estado.cidades.splice(from, 1)[0];
+  estado.cidades.splice(to, 0, item);
+  render();
+}
 
-// ===== TRANSPORTE (por cidade) =====
+// ================= TRANSPORTE/HOTEL/LOCAL =================
 function addTransporte(cIdx) {
   const tipo = document.getElementById(`transp_tipo_${cIdx}`).value;
   const empresa = document.getElementById(`transp_empresa_${cIdx}`).value.trim();
@@ -248,8 +362,6 @@ function addTransporte(cIdx) {
   estado.cidades[cIdx].transporte.push({ tipo, empresa, ida, volta, custo });
   render();
 }
-
-// ===== HOTEL (por cidade) =====
 function addHotel(cIdx) {
   const nome = document.getElementById(`hotel_nome_${cIdx}`).value.trim();
   const end = document.getElementById(`hotel_end_${cIdx}`).value.trim();
@@ -260,25 +372,42 @@ function addHotel(cIdx) {
   estado.cidades[cIdx].hotel.push({ nome, end, checkin, checkout, custo });
   render();
 }
-
-// ===== LOCAL (por cidade) =====
 function addLocal(cIdx) {
   const nome = document.getElementById(`local_nome_${cIdx}`).value.trim();
-  const dia = document.getElementById(`local_dia_${cIdx}`).value.trim();
+  const data = document.getElementById(`local_data_${cIdx}`).value;
   const hora = document.getElementById(`local_hora_${cIdx}`).value.trim();
   const cat = document.getElementById(`local_cat_${cIdx}`).value;
+  const lat = parseFloat(document.getElementById(`local_lat_${cIdx}`).value) || null;
+  const lng = parseFloat(document.getElementById(`local_lng_${cIdx}`).value) || null;
   if (!nome) return alert('Informe o nome do local.');
-  estado.cidades[cIdx].locais.push({ nome, dia, hora, cat });
+  estado.cidades[cIdx].locais.push({ nome, data, hora, cat, lat, lng });
   render();
 }
-
-// ===== REMOÇÃO GENÉRICA =====
 function remover(cIdx, tipo, i) {
   estado.cidades[cIdx][tipo].splice(i, 1);
   render();
 }
 
-// ===== BAGAGEM =====
+// ================= CONEXÃO ENTRE CIDADES =================
+function setConexao(cIdx) {
+  const tipo = document.getElementById(`conexao_tipo_${cIdx}`).value;
+  const custo = parseFloat(document.getElementById(`conexao_custo_${cIdx}`).value) || 0;
+  estado.cidades[cIdx].conexao = { tipo, custo };
+  render();
+}
+
+// ================= COORDENADAS DA CIDADE =================
+function setCoordenadas(cIdx) {
+  const lat = parseFloat(document.getElementById(`cidade_lat_${cIdx}`).value);
+  const lng = parseFloat(document.getElementById(`cidade_lng_${cIdx}`).value);
+  if (isNaN(lat) || isNaN(lng)) return alert('Informe lat e lng válidos.');
+  estado.cidades[cIdx].lat = lat;
+  estado.cidades[cIdx].lng = lng;
+  render();
+  atualizarMapa();
+}
+
+// ================= BAGAGEM =================
 function gerarBagagem() {
   const tipo = document.getElementById('tipoViagem').value;
   const clima = document.getElementById('clima').value;
@@ -287,12 +416,7 @@ function gerarBagagem() {
   const base = ['Escova de dentes', 'Pasta de dente', 'Desodorante', 'Shampoo',
     'Documentos (RG/Passaporte)', 'Celular + carregador', 'Carteira', 'Remédios pessoais'];
   const roupaBase = dias <= 2 ? 2 : Math.min(dias, 7);
-
-  let roupas = [
-    'Cuecas/calcinhas x' + (roupaBase + 1),
-    'Meias x' + (roupaBase + 1),
-    'Camisetas x' + (roupaBase + 1)
-  ];
+  let roupas = ['Cuecas/calcinhas x' + (roupaBase+1), 'Meias x' + (roupaBase+1), 'Camisetas x' + (roupaBase+1)];
   let extras = [];
   let calcados = ['Tênis confortável'];
 
@@ -319,20 +443,17 @@ function gerarBagagem() {
     extras.push('Maiô/sunga', 'Toalha de praia', 'Protetor solar FPS 50+', 'Bolsa térmica');
     calcados = ['Chinelo', 'Sandália'];
   } else if (tipo === 'aventura') {
-    extras.push('Mochila pequena', "Garrafa d'água", 'Lanterna', 'Canivete',
-      'Kit primeiros socorros', 'Repelente');
+    extras.push('Mochila pequena', "Garrafa d'água", 'Lanterna', 'Canivete', 'Kit primeiros socorros', 'Repelente');
     calcados.push('Bota de trilha');
   } else if (tipo === 'mochilao') {
-    extras.push('Mochila cargueira', 'Cadeado para mochila', 'Saco de dormir leve',
-      'Toalha rápida', 'Adaptador de tomada');
+    extras.push('Mochila cargueira', 'Cadeado para mochila', 'Saco de dormir leve', 'Toalha rápida', 'Adaptador de tomada');
     calcados.push('Sandália');
   } else if (tipo === 'cultural') {
     extras.push('Guia/caderno', 'Câmera fotográfica', 'Roupas confortáveis para caminhar');
   } else {
     extras.push('Roupas casuais extras', 'Livro/entretenimento');
   }
-
-  extras.push('Seguro viagem', 'Reservas impressas (hotel/transporte)');
+  extras.push('Seguro viagem', 'Reservas impressas');
 
   estado.bagagem = [
     ...base.map(t => ({ item: t, cat: 'Essenciais', done: false })),
@@ -342,34 +463,30 @@ function gerarBagagem() {
   ];
   render();
 }
-
 function limparBagagem() {
-  if (confirm('Limpar toda a bagagem?')) {
-    estado.bagagem = [];
-    render();
-  }
+  if (confirm('Limpar toda a bagagem?')) { estado.bagagem = []; render(); }
 }
+function toggleBagagem(i) { estado.bagagem[i].done = !estado.bagagem[i].done; render(); }
 
-function toggleBagagem(i) {
-  estado.bagagem[i].done = !estado.bagagem[i].done;
-  render();
-}
-
-// ===== RENDER =====
+// ================= RENDER PRINCIPAL =================
 function render() {
   renderCidades();
+  renderTimeline();
   renderBagagem();
-  renderResumo();
+  renderOrcamento();
+  // salvar orçamento no estado
+  estado.orcamento.alimentacao = parseFloat(document.getElementById('orc_alimentacao').value) || 0;
+  estado.orcamento.passeios = parseFloat(document.getElementById('orc_passeios').value) || 0;
+  estado.orcamento.extras = parseFloat(document.getElementById('orc_extras').value) || 0;
 }
 
 // ---- CIDADES ----
 function renderCidades() {
   const box = document.getElementById('listaCidades');
-  const badge = document.getElementById('badgeCidades');
-  badge.textContent = `${estado.cidades.length} cidade(s)`;
+  document.getElementById('badgeCidades').textContent = `${estado.cidades.length} cidade(s)`;
 
   if (estado.cidades.length === 0) {
-    box.innerHTML = '<div class="empty">Nenhuma cidade adicionada ainda. Adicione a primeira acima 👆</div>';
+    box.innerHTML = '<div class="empty">Nenhuma cidade adicionada</div>';
     return;
   }
 
@@ -378,161 +495,217 @@ function renderCidades() {
       ? Math.max(1, Math.ceil((new Date(c.saida) - new Date(c.chegada)) / 86400000) + 1)
       : '—';
 
+    // conexão anterior (se não for a primeira cidade)
+    const conexaoHtml = cIdx > 0 ? `
+      <div class="conexao">
+        ⬇️ Conexão: ${estado.cidades[cIdx-1].nome} → ${c.nome}
+        <div class="grid" style="margin-top:8px;">
+          <div>
+            <select id="conexao_tipo_${cIdx}">
+              ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
+                `<option ${c.conexao?.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <input id="conexao_custo_${cIdx}" type="number" placeholder="Custo R$"
+                   value="${c.conexao?.custo || 0}">
+          </div>
+          <div>
+            <button class="small" onclick="setConexao(${cIdx})">Definir conexão</button>
+          </div>
+        </div>
+      </div>
+    ` : '';
+
     return `
-    <div class="cidade-card">
+    ${conexaoHtml}
+    <div class="cidade-card" draggable="true"
+         ondragstart="onDragStart(event, ${cIdx})"
+         ondragover="onDragOver(event)"
+         ondragleave="onDragLeave(event)"
+         ondrop="onDrop(event, ${cIdx})"
+         ondragend="onDragEnd(event)">
       <div class="cidade-header">
-        <h3>
-          ${c.nome}
-          <small>(${diasCidade} dia(s) · ${c.locais.length} local(is))</small>
-        </h3>
-        <button class="danger" onclick="removerCidade(${cIdx})">Remover Cidade</button>
+        <span class="drag-handle" title="Arraste para reordenar">⋮⋮</span>
+        <h3>${cIdx + 1}. ${c.nome} <small>(${diasCidade} dia(s) · ${c.locais.length} local(is))</small></h3>
+        <button class="danger" onclick="removerCidade(${cIdx})">Remover</button>
       </div>
 
-      <!-- TRANSPORTE DA CIDADE -->
-      <div class="subtitulo">🚗 Transporte até / de ${c.nome}</div>
+      <!-- Coordenadas -->
       <div class="grid">
-        <div>
-          <label>Tipo</label>
-          <select id="transp_tipo_${cIdx}">
-            <option>Avião</option><option>Trem</option><option>Ônibus</option>
-            <option>Carro</option><option>Barco</option>
-          </select>
-        </div>
-        <div>
-          <label>Empresa</label>
-          <input id="transp_empresa_${cIdx}" placeholder="Ex: TAP">
-        </div>
-        <div>
-          <label>Ida</label>
-          <input id="transp_ida_${cIdx}" placeholder="Ex: 10/05 08:30">
-        </div>
-        <div>
-          <label>Volta</label>
-          <input id="transp_volta_${cIdx}" placeholder="Ex: 15/05 18:00">
-        </div>
-        <div>
-          <label>Custo (R$)</label>
-          <input id="transp_custo_${cIdx}" type="number" placeholder="0">
-        </div>
+        <div><label>Latitude</label><input id="cidade_lat_${cIdx}" type="number" step="any" value="${c.lat ?? ''}" placeholder="Ex: -23.55"></div>
+        <div><label>Longitude</label><input id="cidade_lng_${cIdx}" type="number" step="any" value="${c.lng ?? ''}" placeholder="Ex: -46.63"></div>
+        <div style="display:flex;align-items:flex-end;"><button class="small" onclick="setCoordenadas(${cIdx})">📍 Salvar no Mapa</button></div>
       </div>
-      <div class="actions">
-        <button class="small" onclick="addTransporte(${cIdx})">+ Transporte</button>
+
+      <!-- Transporte -->
+      <div class="subtitulo">🚗 Transporte</div>
+      <div class="grid">
+        <div><label>Tipo</label><select id="transp_tipo_${cIdx}">
+          <option>Avião</option><option>Trem</option><option>Ônibus</option><option>Carro</option><option>Barco</option>
+        </select></div>
+        <div><label>Empresa</label><input id="transp_empresa_${cIdx}" placeholder="Ex: TAP"></div>
+        <div><label>Ida</label><input id="transp_ida_${cIdx}" placeholder="Ex: 10/05 08:30"></div>
+        <div><label>Volta</label><input id="transp_volta_${cIdx}" placeholder="Ex: 15/05 18:00"></div>
+        <div><label>Custo (R$)</label><input id="transp_custo_${cIdx}" type="number" placeholder="0"></div>
       </div>
+      <div class="actions"><button class="small" onclick="addTransporte(${cIdx})">+ Transporte</button></div>
       <div style="margin-top:10px;">
-        ${c.transporte.length === 0
-          ? '<div class="empty">Sem transporte</div>'
-          : c.transporte.map((t, i) => `
+        ${c.transporte.length === 0 ? '<div class="empty">Sem transporte</div>' :
+          c.transporte.map((t, i) => `
             <div class="item-row">
               <div class="item-info">
                 <div class="item-title">${t.tipo} - ${t.empresa || '—'}</div>
                 <div class="item-detail">Ida: ${t.ida || '—'} | Volta: ${t.volta || '—'} | R$ ${t.custo.toFixed(2)}</div>
               </div>
               <button class="danger" onclick="remover(${cIdx}, 'transporte', ${i})">x</button>
-            </div>
-          `).join('')}
+            </div>`).join('')}
       </div>
 
-      <!-- HOTEL DA CIDADE -->
-      <div class="subtitulo">🏨 Hospedagem em ${c.nome}</div>
+      <!-- Hotel -->
+      <div class="subtitulo">🏨 Hospedagem</div>
       <div class="grid">
-        <div>
-          <label>Nome</label>
-          <input id="hotel_nome_${cIdx}" placeholder="Ex: Hotel Central">
-        </div>
-        <div>
-          <label>Endereço</label>
-          <input id="hotel_end_${cIdx}" placeholder="Ex: Av. Liberdade, 100">
-        </div>
-        <div>
-          <label>Check-in</label>
-          <input id="hotel_in_${cIdx}" type="date">
-        </div>
-        <div>
-          <label>Check-out</label>
-          <input id="hotel_out_${cIdx}" type="date">
-        </div>
-        <div>
-          <label>R$/noite</label>
-          <input id="hotel_custo_${cIdx}" type="number" placeholder="0">
-        </div>
+        <div><label>Nome</label><input id="hotel_nome_${cIdx}" placeholder="Ex: Hotel Central"></div>
+        <div><label>Endereço</label><input id="hotel_end_${cIdx}" placeholder="Ex: Av. Liberdade, 100"></div>
+        <div><label>Check-in</label><input id="hotel_in_${cIdx}" type="date"></div>
+        <div><label>Check-out</label><input id="hotel_out_${cIdx}" type="date"></div>
+        <div><label>R$/noite</label><input id="hotel_custo_${cIdx}" type="number" placeholder="0"></div>
       </div>
-      <div class="actions">
-        <button class="small" onclick="addHotel(${cIdx})">+ Hotel</button>
-      </div>
+      <div class="actions"><button class="small" onclick="addHotel(${cIdx})">+ Hotel</button></div>
       <div style="margin-top:10px;">
-        ${c.hotel.length === 0
-          ? '<div class="empty">Sem hotel cadastrado</div>'
-          : c.hotel.map((h, i) => `
+        ${c.hotel.length === 0 ? '<div class="empty">Sem hotel</div>' :
+          c.hotel.map((h, i) => `
             <div class="item-row">
               <div class="item-info">
                 <div class="item-title">${h.nome}</div>
                 <div class="item-detail">${h.end || '—'} | In: ${h.checkin || '—'} | Out: ${h.checkout || '—'} | R$ ${h.custo.toFixed(2)}/noite</div>
               </div>
               <button class="danger" onclick="remover(${cIdx}, 'hotel', ${i})">x</button>
-            </div>
-          `).join('')}
+            </div>`).join('')}
       </div>
 
-      <!-- LOCAIS DA CIDADE -->
-      <div class="subtitulo">📍 Locais em ${c.nome}</div>
+      <!-- Locais -->
+      <div class="subtitulo">📍 Locais</div>
       <div class="grid">
-        <div>
-          <label>Local</label>
-          <input id="local_nome_${cIdx}" placeholder="Ex: Torre de Belém">
-        </div>
-        <div>
-          <label>Dia / Data</label>
-          <input id="local_dia_${cIdx}" placeholder="Ex: Dia 2">
-        </div>
-        <div>
-          <label>Horário</label>
-          <input id="local_hora_${cIdx}" placeholder="Ex: 10:00">
-        </div>
-        <div>
-          <label>Categoria</label>
-          <select id="local_cat_${cIdx}">
-            <option>Turismo</option><option>Gastronomia</option><option>Compras</option>
-            <option>Cultura</option><option>Natureza</option>
-          </select>
-        </div>
+        <div><label>Local</label><input id="local_nome_${cIdx}" placeholder="Ex: Torre de Belém"></div>
+        <div><label>Data</label><input id="local_data_${cIdx}" type="date"></div>
+        <div><label>Horário</label><input id="local_hora_${cIdx}" placeholder="Ex: 10:00"></div>
+        <div><label>Categoria</label><select id="local_cat_${cIdx}">
+          <option>Turismo</option><option>Gastronomia</option><option>Compras</option><option>Cultura</option><option>Natureza</option>
+        </select></div>
+        <div><label>Lat (opcional)</label><input id="local_lat_${cIdx}" type="number" step="any" placeholder="Ex: 38.69"></div>
+        <div><label>Lng (opcional)</label><input id="local_lng_${cIdx}" type="number" step="any" placeholder="Ex: -9.21"></div>
       </div>
-      <div class="actions">
-        <button class="small" onclick="addLocal(${cIdx})">+ Local</button>
-      </div>
+      <div class="actions"><button class="small" onclick="addLocal(${cIdx})">+ Local</button></div>
       <div style="margin-top:10px;">
-        ${c.locais.length === 0
-          ? '<div class="empty">Sem locais cadastrados</div>'
-          : c.locais.map((l, i) => `
+        ${c.locais.length === 0 ? '<div class="empty">Sem locais</div>' :
+          c.locais.map((l, i) => `
             <div class="item-row">
               <div class="item-info">
                 <div class="item-title">${l.nome} <span class="badge cinza">${l.cat}</span></div>
-                <div class="item-detail">${l.dia || '—'} ${l.hora ? 'às ' + l.hora : ''}</div>
+                <div class="item-detail">${l.data || '—'} ${l.hora ? 'às ' + l.hora : ''}${l.lat ? ' 📍' : ''}</div>
               </div>
               <button class="danger" onclick="remover(${cIdx}, 'locais', ${i})">x</button>
-            </div>
-          `).join('')}
+            </div>`).join('')}
       </div>
     </div>`;
   }).join('');
 }
 
-// ---- BAGAGEM ----
-function renderBagagem() {
-  const lb = document.getElementById('listaBagagem');
-  const badge = document.getElementById('badgeBagagem');
-  badge.textContent = `${estado.bagagem.filter(b => !b.done).length} / ${estado.bagagem.length} itens`;
+// ================= TIMELINE =================
+function renderTimeline() {
+  const box = document.getElementById('timeline');
 
-  if (estado.bagagem.length === 0) {
-    lb.innerHTML = '<div class="empty">Clique em "Regenerar" para gerar a lista de bagagem</div>';
+  // Junta todos os eventos com data
+  const eventos = [];
+  estado.cidades.forEach(c => {
+    // chegada da cidade
+    if (c.chegada) {
+      eventos.push({
+        data: c.chegada, hora: '', tipo: 'transporte',
+        titulo: `Chegada em ${c.nome}`, sub: c.conexao ? `Conexão via ${c.conexao.tipo}` : ''
+      });
+    }
+    c.transporte.forEach(t => {
+      if (t.ida) {
+        const [dataStr, hora] = t.ida.split(' ');
+        eventos.push({
+          data: dataStr, hora: hora || '', tipo: 'transporte',
+          titulo: `${t.tipo} ${t.empresa || ''}`, sub: `Ida • ${c.nome}`
+        });
+      }
+    });
+    c.hotel.forEach(h => {
+      if (h.checkin) {
+        eventos.push({
+          data: h.checkin, hora: '', tipo: 'hotel',
+          titulo: `Check-in ${h.nome}`, sub: c.nome
+        });
+      }
+    });
+    c.locais.forEach(l => {
+      if (l.data) {
+        eventos.push({
+          data: l.data, hora: l.hora || '', tipo: 'local',
+          titulo: l.nome, sub: `${c.nome} • ${l.cat}`
+        });
+      }
+    });
+  });
+
+  if (eventos.length === 0) {
+    box.innerHTML = '<div class="empty">Adicione datas aos locais/transportes para ver a timeline</div>';
     return;
   }
 
+  // Ordena por data e hora
+  eventos.sort((a, b) => {
+    const ka = (a.data || '') + ' ' + (a.hora || '00:00');
+    const kb = (b.data || '') + ' ' + (b.hora || '00:00');
+    return ka.localeCompare(kb);
+  });
+
+  // Agrupa por dia
+  const porDia = {};
+  eventos.forEach(e => {
+    if (!porDia[e.data]) porDia[e.data] = [];
+    porDia[e.data].push(e);
+  });
+
+  box.innerHTML = '<div class="timeline">' + Object.entries(porDia).map(([data, evs]) => {
+    const dt = new Date(data + 'T00:00:00');
+    const diaSemana = dt.toLocaleDateString('pt-BR', { weekday: 'long' });
+    const dataFmt = dt.toLocaleDateString('pt-BR');
+    return `
+      <div class="timeline-dia">
+        <h4>📅 ${dataFmt} (${diaSemana})</h4>
+        ${evs.map(e => `
+          <div class="timeline-evento ${e.tipo}">
+            <span class="hora">${e.hora || '—'}</span>
+            <strong>${e.titulo}</strong>
+            ${e.sub ? `<span style="color:#888;font-size:0.85em;">· ${e.sub}</span>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('') + '</div>';
+}
+
+// ================= BAGAGEM =================
+function renderBagagem() {
+  const lb = document.getElementById('listaBagagem');
+  document.getElementById('badgeBagagem').textContent =
+    `${estado.bagagem.filter(b => !b.done).length} / ${estado.bagagem.length} itens`;
+
+  if (estado.bagagem.length === 0) {
+    lb.innerHTML = '<div class="empty">Clique em "Regenerar" para gerar a lista</div>';
+    return;
+  }
   const cats = {};
   estado.bagagem.forEach((b, i) => {
     if (!cats[b.cat]) cats[b.cat] = [];
     cats[b.cat].push({ ...b, idx: i });
   });
-
   lb.innerHTML = Object.entries(cats).map(([cat, itens]) => `
     <div style="margin-bottom:12px;">
       <strong style="color:#667eea;font-size:0.9em;">${cat}</strong>
@@ -540,49 +713,265 @@ function renderBagagem() {
         <div class="bagagem-item ${it.done ? 'done' : ''}">
           <input type="checkbox" ${it.done ? 'checked' : ''} onchange="toggleBagagem(${it.idx})">
           <label>${it.item}</label>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
+        </div>`).join('')}
+    </div>`).join('');
 }
 
-// ---- RESUMO ----
-function renderResumo() {
-  let custoTransp = 0, custoHotel = 0, totalLocais = 0;
+// ================= ORÇAMENTO =================
+function renderOrcamento() {
+  const alim = parseFloat(document.getElementById('orc_alimentacao').value) || 0;
+  const pas = parseFloat(document.getElementById('orc_passeios').value) || 0;
+  const ext = parseFloat(document.getElementById('orc_extras').value) || 0;
+  const dias = Math.max(1, parseInt(document.getElementById('dias').value) || 1);
+
+  let custoTransp = 0, custoHotel = 0, custoConexao = 0;
   estado.cidades.forEach(c => {
     custoTransp += c.transporte.reduce((s, t) => s + t.custo, 0);
     custoHotel += c.hotel.reduce((s, h) => {
       if (h.checkin && h.checkout) {
-        const dias = Math.max(1, Math.ceil((new Date(h.checkout) - new Date(h.checkin)) / 86400000));
-        return s + h.custo * dias;
+        const d = Math.max(1, Math.ceil((new Date(h.checkout) - new Date(h.checkin)) / 86400000));
+        return s + h.custo * d;
       }
       return s + h.custo;
     }, 0);
-    totalLocais += c.locais.length;
+    if (c.conexao) custoConexao += c.conexao.custo;
   });
 
-  document.getElementById('resumoViagem').innerHTML = `
-    <strong>📊 Resumo geral:</strong>
-    ${estado.cidades.length} cidade(s) |
-    ${totalLocais} local(is) |
-    ${estado.bagagem.filter(b => b.done).length}/${estado.bagagem.length} itens prontos
-    <br>
-    <strong>💰 Custo estimado:</strong> R$ ${(custoTransp + custoHotel).toFixed(2)}
-    <br>
-    <strong>🏙️ Cidades:</strong>
-    ${estado.cidades.length === 0
-      ? '<em>nenhuma</em>'
-      : estado.cidades.map(c => `${c.nome}${c.chegada && c.saida ? ` (${c.chegada} → ${c.saida})` : ''}`).join(' • ')}
+  const totalAlim = alim * dias;
+  const total = custoTransp + custoHotel + custoConexao + totalAlim + pas + ext;
+
+  document.getElementById('orcamento').innerHTML = `
+    <div class="orcamento-item transporte">
+      <div class="label">🚗 Transporte</div>
+      <div class="valor">R$ ${(custoTransp + custoConexao).toFixed(2)}</div>
+    </div>
+    <div class="orcamento-item hotel">
+      <div class="label">🏨 Hotel</div>
+      <div class="valor">R$ ${custoHotel.toFixed(2)}</div>
+    </div>
+    <div class="orcamento-item alimentacao">
+      <div class="label">🍽️ Alimentação (${dias}d)</div>
+      <div class="valor">R$ ${totalAlim.toFixed(2)}</div>
+    </div>
+    <div class="orcamento-item passeios">
+      <div class="label">🎟️ Passeios</div>
+      <div class="valor">R$ ${pas.toFixed(2)}</div>
+    </div>
+    <div class="orcamento-item">
+      <div class="label">🎁 Extras</div>
+      <div class="valor">R$ ${ext.toFixed(2)}</div>
+    </div>
+    <div class="orcamento-item total">
+      <div class="label">💰 TOTAL</div>
+      <div class="valor">R$ ${total.toFixed(2)}</div>
+    </div>
   `;
 }
 
-// ===== ATUALIZAR TUDO =====
+// ================= MAPA =================
+function atualizarMapa() {
+  if (!mapa) {
+    mapa = L.map('mapa').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(mapa);
+    marcadoresLayer = L.layerGroup().addTo(mapa);
+  }
+  marcadoresLayer.clearLayers();
+
+  const cidadesComCoord = estado.cidades.filter(c => c.lat && c.lng);
+  if (cidadesComCoord.length === 0) return;
+
+  const pontos = [];
+  estado.cidades.forEach((c, i) => {
+    if (!c.lat || !c.lng) return;
+    pontos.push([c.lat, c.lng]);
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:#764ba2;color:white;border:2px solid white;border-radius:50%;
+             width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+             font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.4);">${i+1}</div>`,
+      iconSize: [32, 32], iconAnchor: [16, 16]
+    });
+    L.marker([c.lat, c.lng], { icon }).bindPopup(`<b>${c.nome}</b>`).addTo(marcadoresLayer);
+
+    // locais da cidade
+    c.locais.forEach(l => {
+      if (l.lat && l.lng) {
+        L.circleMarker([l.lat, l.lng], {
+          radius: 7, color: '#667eea', fillColor: '#667eea', fillOpacity: 0.7
+        }).bindPopup(`<b>${l.nome}</b><br>${l.cat}`).addTo(marcadoresLayer);
+      }
+    });
+  });
+
+  // linha entre cidades
+  if (pontos.length > 1) {
+    L.polyline(pontos, { color: '#667eea', weight: 3, dashArray: '8 8' }).addTo(marcadoresLayer);
+  }
+
+  mapa.fitBounds(pontos, { padding: [30, 30] });
+}
+
+// ================= DRAG & DROP =================
+let dragIdx = null;
+function onDragStart(e, idx) { dragIdx = idx; e.currentTarget.classList.add('dragging'); }
+function onDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e, idx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (dragIdx !== null && dragIdx !== idx) moverCidade(dragIdx, idx);
+  dragIdx = null;
+}
+function onDragEnd(e) { e.currentTarget.classList.remove('dragging'); }
+
+// ================= PDF =================
+async function exportarPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageW = 210, pageH = 297, margin = 15;
+  let y = margin;
+
+  const destino = document.getElementById('destino').value || 'Minha Viagem';
+  const ida = document.getElementById('dataIda').value;
+  const volta = document.getElementById('dataVolta').value;
+
+  // cabeçalho
+  pdf.setFillColor(102, 126, 234);
+  pdf.rect(0, 0, pageW, 35, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(22);
+  pdf.setFont(undefined, 'bold');
+  pdf.text('✈️ ' + destino, margin, 18);
+  pdf.setFontSize(11);
+  pdf.setFont(undefined, 'normal');
+  pdf.text(`${ida || '?'} → ${volta || '?'}`, margin, 27);
+
+  y = 45;
+  pdf.setTextColor(0, 0, 0);
+
+  // helper para nova página
+  const checkPage = (need = 10) => {
+    if (y + need > pageH - margin) { pdf.addPage(); y = margin; }
+  };
+
+  // cidades
+  for (let i = 0; i < estado.cidades.length; i++) {
+    const c = estado.cidades[i];
+    checkPage(40);
+    pdf.setFillColor(240, 244, 255);
+    pdf.rect(margin, y, pageW - 2*margin, 9, 'F');
+    pdf.setFontSize(13);
+    pdf.setFont(undefined, 'bold');
+    pdf.setTextColor(118, 75, 162);
+    pdf.text(`${i+1}. ${c.nome}  (${c.chegada || '?'} → ${c.saida || '?'})`, margin + 3, y + 6);
+    y += 14;
+    pdf.setTextColor(0, 0, 0);
+
+    if (i > 0 && c.conexao) {
+      checkPage(6);
+      pdf.setFontSize(9);
+      pdf.setFont(undefined, 'italic');
+      pdf.text(`  ↳ Conexão: ${estado.cidades[i-1].nome} → ${c.nome} (${c.conexao.tipo}, R$ ${c.conexao.custo.toFixed(2)})`, margin + 3, y);
+      y += 6;
+    }
+
+    // transporte
+    if (c.transporte.length) {
+      checkPage(8);
+      pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
+      pdf.text('Transporte:', margin + 3, y); y += 5;
+      pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
+      c.transporte.forEach(t => {
+        checkPage(5);
+        pdf.text(`  • ${t.tipo} ${t.empresa || ''} | Ida: ${t.ida || '—'} | Volta: ${t.volta || '—'} | R$ ${t.custo.toFixed(2)}`, margin + 5, y);
+        y += 5;
+      });
+    }
+
+    // hotel
+    if (c.hotel.length) {
+      checkPage(8);
+      pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
+      pdf.text('Hospedagem:', margin + 3, y); y += 5;
+      pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
+      c.hotel.forEach(h => {
+        checkPage(5);
+        pdf.text(`  • ${h.nome} | ${h.end || '—'} | ${h.checkin || '?'} a ${h.checkout || '?'} | R$ ${h.custo.toFixed(2)}/noite`, margin + 5, y);
+        y += 5;
+      });
+    }
+
+    // locais
+    if (c.locais.length) {
+      checkPage(8);
+      pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
+      pdf.text('Locais:', margin + 3, y); y += 5;
+      pdf.setFont(undefined, 'normal'); pdf.setFontSize(9);
+      c.locais.forEach(l => {
+        checkPage(5);
+        pdf.text(`  • ${l.data || '—'} ${l.hora || ''} — ${l.nome} (${l.cat})`, margin + 5, y);
+        y += 5;
+      });
+    }
+    y += 5;
+  }
+
+  // orçamento
+  checkPage(30);
+  pdf.setFillColor(240, 244, 255);
+  pdf.rect(margin, y, pageW - 2*margin, 9, 'F');
+  pdf.setFontSize(13); pdf.setFont(undefined, 'bold'); pdf.setTextColor(118, 75, 162);
+  pdf.text('💰 Orçamento', margin + 3, y + 6);
+  y += 14; pdf.setTextColor(0, 0, 0);
+  pdf.setFontSize(10); pdf.setFont(undefined, 'normal');
+
+  const alim = parseFloat(document.getElementById('orc_alimentacao').value) || 0;
+  const pas = parseFloat(document.getElementById('orc_passeios').value) || 0;
+  const ext = parseFloat(document.getElementById('orc_extras').value) || 0;
+  const dias = Math.max(1, parseInt(document.getElementById('dias').value) || 1);
+  let cT = 0, cH = 0, cC = 0;
+  estado.cidades.forEach(c => {
+    cT += c.transporte.reduce((s,t)=>s+t.custo,0);
+    cH += c.hotel.reduce((s,h)=>{
+      if (h.checkin && h.checkout) {
+        const d = Math.max(1, Math.ceil((new Date(h.checkout) - new Date(h.checkin))/86400000));
+        return s + h.custo * d;
+      }
+      return s + h.custo;
+    },0);
+    if (c.conexao) cC += c.conexao.custo;
+  });
+  const tAlim = alim * dias;
+  const total = cT + cH + cC + tAlim + pas + ext;
+
+  const linhas = [
+    ['Transporte', cT + cC],
+    ['Hotel', cH],
+    [`Alimentação (${dias} dias)`, tAlim],
+    ['Passeios', pas],
+    ['Extras', ext],
+    ['TOTAL', total]
+  ];
+  linhas.forEach(([n, v], idx) => {
+    checkPage(6);
+    pdf.setFont(undefined, idx === linhas.length - 1 ? 'bold' : 'normal');
+    pdf.text(`${n}: R$ ${v.toFixed(2)}`, margin + 5, y);
+    y += 6;
+  });
+
+  pdf.save(`viagem-${destino.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+}
+
+// ================= ATUALIZAR TUDO =================
 function atualizarTudo() {
   gerarBagagem();
   render();
+  atualizarMapa();
 }
 
-// Auto-calcular dias totais
+// ================= AUTO-DIAS =================
 document.getElementById('dataIda').addEventListener('change', calcDias);
 document.getElementById('dataVolta').addEventListener('change', calcDias);
 function calcDias() {
@@ -594,9 +983,10 @@ function calcDias() {
   }
 }
 
-// ===== INICIALIZAR =====
+// ================= INIT =================
 carregarLocal();
 render();
+atualizarMapa();
 if (estado.bagagem.length === 0) gerarBagagem();
 </script>
 </body>
