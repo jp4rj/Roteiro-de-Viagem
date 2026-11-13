@@ -13,117 +13,76 @@
     padding: 20px;
     color: #333;
   }
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  h1 {
-    color: white;
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 2em;
-  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { color: white; text-align: center; margin-bottom: 20px; font-size: 2em; }
   .card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    background: white; border-radius: 12px; padding: 20px;
+    margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   }
   .card h2 {
-    color: #667eea;
-    margin-bottom: 15px;
-    font-size: 1.2em;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 8px;
+    color: #667eea; margin-bottom: 15px; font-size: 1.2em;
+    border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center;
   }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-  }
-  label {
-    display: block;
-    font-size: 0.85em;
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #555;
-  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 4px; color: #555; }
   input, select, textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 0.95em;
-    font-family: inherit;
+    width: 100%; padding: 8px 10px; border: 1px solid #ddd;
+    border-radius: 6px; font-size: 0.95em; font-family: inherit;
   }
-  input:focus, select:focus {
-    outline: none;
-    border-color: #667eea;
-  }
+  input:focus, select:focus { outline: none; border-color: #667eea; }
   button {
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.95em;
-    font-weight: 600;
-    transition: background 0.2s;
+    background: #667eea; color: white; border: none; padding: 10px 20px;
+    border-radius: 6px; cursor: pointer; font-size: 0.95em;
+    font-weight: 600; transition: background 0.2s;
   }
   button:hover { background: #5568d3; }
-  button.secondary {
-    background: #e0e0e0;
-    color: #333;
-  }
+  button.secondary { background: #e0e0e0; color: #333; }
   button.secondary:hover { background: #d0d0d0; }
-  button.danger {
-    background: #ff4757;
-    padding: 6px 12px;
-    font-size: 0.85em;
-  }
+  button.danger { background: #ff4757; padding: 6px 12px; font-size: 0.85em; }
   button.danger:hover { background: #ee3546; }
+  button.small { padding: 6px 12px; font-size: 0.85em; }
   .item-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    margin-bottom: 8px;
+    display: flex; gap: 8px; align-items: center; padding: 10px;
+    background: #f8f9fa; border-radius: 6px; margin-bottom: 8px;
   }
   .item-row .item-info { flex: 1; }
   .item-row .item-title { font-weight: 600; }
   .item-row .item-detail { font-size: 0.85em; color: #666; }
-  .actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-  }
+  .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .summary {
-    background: #f8f9fa;
-    border-left: 4px solid #667eea;
-    padding: 12px;
-    border-radius: 6px;
-    margin-top: 15px;
-    font-size: 0.9em;
+    background: #f8f9fa; border-left: 4px solid #667eea;
+    padding: 12px; border-radius: 6px; margin-top: 15px; font-size: 0.9em;
   }
   .summary strong { color: #667eea; }
   .badge {
-    display: inline-block;
-    background: #667eea;
-    color: white;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.75em;
-    margin-left: 8px;
+    display: inline-block; background: #667eea; color: white;
+    padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;
   }
+  .badge.cinza { background: #999; }
   .bagagem-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
   .bagagem-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
   .bagagem-item label { margin: 0; cursor: pointer; font-weight: normal; }
   .bagagem-item.done label { text-decoration: line-through; color: #999; }
   .empty { color: #999; font-style: italic; padding: 10px; text-align: center; }
+
+  /* CIDADE */
+  .cidade-card {
+    background: #fafbff; border: 2px solid #e0e6ff;
+    border-radius: 10px; padding: 15px; margin-bottom: 15px;
+  }
+  .cidade-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #ccc;
+  }
+  .cidade-header h3 { color: #764ba2; font-size: 1.1em; }
+  .cidade-header small { color: #888; font-weight: normal; font-size: 0.85em; }
+  .subtitulo {
+    font-size: 0.9em; color: #667eea; font-weight: 700;
+    margin: 15px 0 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .subtitulo::before { content: ''; width: 4px; height: 16px; background: #667eea; border-radius: 2px; }
+
   @media (max-width: 600px) {
     .item-row { flex-wrap: wrap; }
     h1 { font-size: 1.5em; }
@@ -134,13 +93,13 @@
 <div class="container">
   <h1>✈️ Planejador de Viagem</h1>
 
-  <!-- CONFIGURAÇÃO -->
+  <!-- ========== CONFIGURAÇÃO DA VIAGEM ========== -->
   <div class="card">
     <h2>🎯 Configuração da Viagem</h2>
     <div class="grid">
       <div>
-        <label>Destino</label>
-        <input id="destino" placeholder="Ex: Lisboa">
+        <label>Nome / Destino geral</label>
+        <input id="destino" placeholder="Ex: Europa 2026, Nordeste, Itália...">
       </div>
       <div>
         <label>Data de ida</label>
@@ -181,112 +140,41 @@
     </div>
   </div>
 
-  <!-- TRANSPORTE -->
+  <!-- ========== CIDADES ========== -->
   <div class="card">
-    <h2>🚗 Transporte</h2>
+    <h2>
+      🏙️ Cidades da Viagem
+      <span class="badge" id="badgeCidades">0 cidades</span>
+    </h2>
+
+    <!-- Formulário de nova cidade -->
     <div class="grid">
       <div>
-        <label>Tipo</label>
-        <select id="transp_tipo">
-          <option>Avião</option>
-          <option>Trem</option>
-          <option>Ônibus</option>
-          <option>Carro</option>
-          <option>Barco</option>
-        </select>
+        <label>Nome da cidade</label>
+        <input id="cidade_nome" placeholder="Ex: Lisboa">
       </div>
       <div>
-        <label>Companhia / Empresa</label>
-        <input id="transp_empresa" placeholder="Ex: TAP">
+        <label>Chegada</label>
+        <input id="cidade_chegada" type="date">
       </div>
       <div>
-        <label>Ida (data/hora)</label>
-        <input id="transp_ida" placeholder="Ex: 10/05 08:30">
-      </div>
-      <div>
-        <label>Volta (data/hora)</label>
-        <input id="transp_volta" placeholder="Ex: 15/05 18:00">
-      </div>
-      <div>
-        <label>Custo (R$)</label>
-        <input id="transp_custo" type="number" placeholder="0">
+        <label>Saída</label>
+        <input id="cidade_saida" type="date">
       </div>
     </div>
     <div class="actions">
-      <button onclick="addTransporte()">+ Adicionar Transporte</button>
+      <button onclick="addCidade()">+ Adicionar Cidade</button>
     </div>
-    <div id="listaTransporte" style="margin-top:12px;"></div>
+
+    <!-- Lista de cidades -->
+    <div id="listaCidades" style="margin-top:15px;"></div>
   </div>
 
-  <!-- HOTEL -->
-  <div class="card">
-    <h2>🏨 Hotel / Hospedagem</h2>
-    <div class="grid">
-      <div>
-        <label>Nome</label>
-        <input id="hotel_nome" placeholder="Ex: Hotel Central">
-      </div>
-      <div>
-        <label>Endereço</label>
-        <input id="hotel_end" placeholder="Ex: Av. Liberdade, 100">
-      </div>
-      <div>
-        <label>Check-in</label>
-        <input id="hotel_in" type="date">
-      </div>
-      <div>
-        <label>Check-out</label>
-        <input id="hotel_out" type="date">
-      </div>
-      <div>
-        <label>Valor/noite (R$)</label>
-        <input id="hotel_custo" type="number" placeholder="0">
-      </div>
-    </div>
-    <div class="actions">
-      <button onclick="addHotel()">+ Adicionar Hotel</button>
-    </div>
-    <div id="listaHotel" style="margin-top:12px;"></div>
-  </div>
-
-  <!-- LOCAIS -->
-  <div class="card">
-    <h2>📍 Locais a Visitar</h2>
-    <div class="grid">
-      <div>
-        <label>Local</label>
-        <input id="local_nome" placeholder="Ex: Torre de Belém">
-      </div>
-      <div>
-        <label>Dia / Data</label>
-        <input id="local_dia" placeholder="Ex: Dia 2">
-      </div>
-      <div>
-        <label>Horário</label>
-        <input id="local_hora" placeholder="Ex: 10:00">
-      </div>
-      <div>
-        <label>Categoria</label>
-        <select id="local_cat">
-          <option>Turismo</option>
-          <option>Gastronomia</option>
-          <option>Compras</option>
-          <option>Cultura</option>
-          <option>Natureza</option>
-        </select>
-      </div>
-    </div>
-    <div class="actions">
-      <button onclick="addLocal()">+ Adicionar Local</button>
-    </div>
-    <div id="listaLocal" style="margin-top:12px;"></div>
-  </div>
-
-  <!-- BAGAGEM -->
+  <!-- ========== BAGAGEM ========== -->
   <div class="card">
     <h2>🎒 Bagagem <span class="badge" id="badgeBagagem">0 itens</span></h2>
     <p style="font-size:0.85em;color:#666;margin-bottom:12px;">
-      Gerada automaticamente com base no <strong>tipo de viagem</strong>, <strong>dias</strong> e <strong>clima</strong>.
+      Gerada automaticamente com base no <strong>tipo de viagem</strong>, <strong>dias totais</strong> e <strong>clima</strong>.
     </p>
     <div class="actions" style="margin-bottom:12px;">
       <button onclick="gerarBagagem()">🔄 Regenerar</button>
@@ -300,10 +188,11 @@
 <script>
 // ===== ESTADO =====
 let estado = {
-  transporte: [],
-  hotel: [],
-  local: [],
-  bagagem: []
+  transporte: [],   // legado / global (opcional)
+  hotel: [],        // legado / global (opcional)
+  local: [],        // legado / global (opcional)
+  bagagem: [],
+  cidades: []       // { nome, chegada, saida, transporte[], hotel[], locais[] }
 };
 
 // ===== PERSISTÊNCIA =====
@@ -314,60 +203,78 @@ function salvarLocal() {
 function carregarLocal() {
   const dados = localStorage.getItem('viagemApp');
   if (dados) {
-    try { estado = JSON.parse(dados); } catch(e) {}
+    try {
+      const parsed = JSON.parse(dados);
+      estado = { ...estado, ...parsed };
+      // garantir que cidades exista
+      if (!estado.cidades) estado.cidades = [];
+      estado.cidades.forEach(c => {
+        if (!c.transporte) c.transporte = [];
+        if (!c.hotel) c.hotel = [];
+        if (!c.locais) c.locais = [];
+      });
+    } catch(e) {}
   }
 }
 
-// ===== TRANSPORTE =====
-function addTransporte() {
-  const tipo = document.getElementById('transp_tipo').value;
-  const empresa = document.getElementById('transp_empresa').value.trim();
-  const ida = document.getElementById('transp_ida').value.trim();
-  const volta = document.getElementById('transp_volta').value.trim();
-  const custo = parseFloat(document.getElementById('transp_custo').value) || 0;
-  if (!empresa && !ida) return alert('Preencha ao menos empresa ou data de ida.');
-  estado.transporte.push({ tipo, empresa, ida, volta, custo });
-  document.getElementById('transp_empresa').value = '';
-  document.getElementById('transp_ida').value = '';
-  document.getElementById('transp_volta').value = '';
-  document.getElementById('transp_custo').value = '';
+// ===== CIDADE =====
+function addCidade() {
+  const nome = document.getElementById('cidade_nome').value.trim();
+  const chegada = document.getElementById('cidade_chegada').value;
+  const saida = document.getElementById('cidade_saida').value;
+  if (!nome) return alert('Informe o nome da cidade.');
+  estado.cidades.push({ nome, chegada, saida, transporte: [], hotel: [], locais: [] });
+  document.getElementById('cidade_nome').value = '';
+  document.getElementById('cidade_chegada').value = '';
+  document.getElementById('cidade_saida').value = '';
   render();
 }
 
-// ===== HOTEL =====
-function addHotel() {
-  const nome = document.getElementById('hotel_nome').value.trim();
-  const end = document.getElementById('hotel_end').value.trim();
-  const checkin = document.getElementById('hotel_in').value;
-  const checkout = document.getElementById('hotel_out').value;
-  const custo = parseFloat(document.getElementById('hotel_custo').value) || 0;
+function removerCidade(idx) {
+  if (confirm('Remover cidade e tudo dentro dela?')) {
+    estado.cidades.splice(idx, 1);
+    render();
+  }
+}
+
+// ===== TRANSPORTE (por cidade) =====
+function addTransporte(cIdx) {
+  const tipo = document.getElementById(`transp_tipo_${cIdx}`).value;
+  const empresa = document.getElementById(`transp_empresa_${cIdx}`).value.trim();
+  const ida = document.getElementById(`transp_ida_${cIdx}`).value.trim();
+  const volta = document.getElementById(`transp_volta_${cIdx}`).value.trim();
+  const custo = parseFloat(document.getElementById(`transp_custo_${cIdx}`).value) || 0;
+  if (!empresa && !ida) return alert('Preencha empresa ou ida.');
+  estado.cidades[cIdx].transporte.push({ tipo, empresa, ida, volta, custo });
+  render();
+}
+
+// ===== HOTEL (por cidade) =====
+function addHotel(cIdx) {
+  const nome = document.getElementById(`hotel_nome_${cIdx}`).value.trim();
+  const end = document.getElementById(`hotel_end_${cIdx}`).value.trim();
+  const checkin = document.getElementById(`hotel_in_${cIdx}`).value;
+  const checkout = document.getElementById(`hotel_out_${cIdx}`).value;
+  const custo = parseFloat(document.getElementById(`hotel_custo_${cIdx}`).value) || 0;
   if (!nome) return alert('Informe o nome do hotel.');
-  estado.hotel.push({ nome, end, checkin, checkout, custo });
-  document.getElementById('hotel_nome').value = '';
-  document.getElementById('hotel_end').value = '';
-  document.getElementById('hotel_in').value = '';
-  document.getElementById('hotel_out').value = '';
-  document.getElementById('hotel_custo').value = '';
+  estado.cidades[cIdx].hotel.push({ nome, end, checkin, checkout, custo });
   render();
 }
 
-// ===== LOCAL =====
-function addLocal() {
-  const nome = document.getElementById('local_nome').value.trim();
-  const dia = document.getElementById('local_dia').value.trim();
-  const hora = document.getElementById('local_hora').value.trim();
-  const cat = document.getElementById('local_cat').value;
+// ===== LOCAL (por cidade) =====
+function addLocal(cIdx) {
+  const nome = document.getElementById(`local_nome_${cIdx}`).value.trim();
+  const dia = document.getElementById(`local_dia_${cIdx}`).value.trim();
+  const hora = document.getElementById(`local_hora_${cIdx}`).value.trim();
+  const cat = document.getElementById(`local_cat_${cIdx}`).value;
   if (!nome) return alert('Informe o nome do local.');
-  estado.local.push({ nome, dia, hora, cat });
-  document.getElementById('local_nome').value = '';
-  document.getElementById('local_dia').value = '';
-  document.getElementById('local_hora').value = '';
+  estado.cidades[cIdx].locais.push({ nome, dia, hora, cat });
   render();
 }
 
-// ===== REMOVER =====
-function remover(tipo, i) {
-  estado[tipo].splice(i, 1);
+// ===== REMOÇÃO GENÉRICA =====
+function remover(cIdx, tipo, i) {
+  estado.cidades[cIdx][tipo].splice(i, 1);
   render();
 }
 
@@ -377,14 +284,18 @@ function gerarBagagem() {
   const clima = document.getElementById('clima').value;
   const dias = Math.max(1, parseInt(document.getElementById('dias').value) || 1);
 
-  const base = ['Escova de dentes', 'Pasta de dente', 'Desodorante', 'Shampoo', 'Documentos (RG/Passaporte)', 'Celular + carregador', 'Carteira', 'Remédios pessoais'];
+  const base = ['Escova de dentes', 'Pasta de dente', 'Desodorante', 'Shampoo',
+    'Documentos (RG/Passaporte)', 'Celular + carregador', 'Carteira', 'Remédios pessoais'];
   const roupaBase = dias <= 2 ? 2 : Math.min(dias, 7);
 
-  let roupas = ['Cuecas/calcinhas x' + (roupaBase + 1), 'Meias x' + (roupaBase + 1), 'Camisetas x' + (roupaBase + 1)];
+  let roupas = [
+    'Cuecas/calcinhas x' + (roupaBase + 1),
+    'Meias x' + (roupaBase + 1),
+    'Camisetas x' + (roupaBase + 1)
+  ];
   let extras = [];
   let calcados = ['Tênis confortável'];
 
-  // Clima
   if (clima === 'quente') {
     roupas.push('Bermudas/shorts x' + roupaBase);
     extras.push('Protetor solar', 'Óculos de sol', 'Boné/chapéu', 'Repelente');
@@ -392,7 +303,7 @@ function gerarBagagem() {
   } else if (clima === 'frio') {
     roupas.push('Calças x' + roupaBase, 'Casacos/blusas x' + Math.min(dias, 3), 'Suéteres');
     extras.push('Luvas', 'Cachecol', 'Gorro', 'Hidratante labial');
-    calcados.push('Botas/quarto fechado');
+    calcados.push('Botas/calçado fechado');
   } else if (clima === 'chuva') {
     extras.push('Guarda-chuva', 'Capa de chuva', 'Sapato impermeável');
     roupas.push('Calças x' + roupaBase, 'Jaqueta impermeável');
@@ -400,7 +311,6 @@ function gerarBagagem() {
     roupas.push('Calças x' + roupaBase, 'Jaqueta leve');
   }
 
-  // Tipo
   if (tipo === 'negocios') {
     roupas.push('Traje social/terno', 'Camisa social x' + Math.min(dias, 3));
     extras.push('Notebook + carregador', 'Cartões de visita', 'Pasta/porta-documentos');
@@ -409,10 +319,12 @@ function gerarBagagem() {
     extras.push('Maiô/sunga', 'Toalha de praia', 'Protetor solar FPS 50+', 'Bolsa térmica');
     calcados = ['Chinelo', 'Sandália'];
   } else if (tipo === 'aventura') {
-    extras.push('Mochila pequena', 'Garrafa d\'água', 'Lanterna', 'Canivete', 'Kit primeiros socorros', 'Repelente');
+    extras.push('Mochila pequena', "Garrafa d'água", 'Lanterna', 'Canivete',
+      'Kit primeiros socorros', 'Repelente');
     calcados.push('Bota de trilha');
   } else if (tipo === 'mochilao') {
-    extras.push('Mochila cargueira', 'Cadeado para mochila', 'Saco de dormir leve', 'Toalha rápida', 'Adaptador de tomada');
+    extras.push('Mochila cargueira', 'Cadeado para mochila', 'Saco de dormir leve',
+      'Toalha rápida', 'Adaptador de tomada');
     calcados.push('Sandália');
   } else if (tipo === 'cultural') {
     extras.push('Guia/caderno', 'Câmera fotográfica', 'Roupas confortáveis para caminhar');
@@ -420,7 +332,6 @@ function gerarBagagem() {
     extras.push('Roupas casuais extras', 'Livro/entretenimento');
   }
 
-  // Documentos extras
   extras.push('Seguro viagem', 'Reservas impressas (hotel/transporte)');
 
   estado.bagagem = [
@@ -446,95 +357,222 @@ function toggleBagagem(i) {
 
 // ===== RENDER =====
 function render() {
-  // Transporte
-  const lt = document.getElementById('listaTransporte');
-  lt.innerHTML = estado.transporte.length === 0
-    ? '<div class="empty">Nenhum transporte adicionado</div>'
-    : estado.transporte.map((t, i) => `
-      <div class="item-row">
-        <div class="item-info">
-          <div class="item-title">${t.tipo} - ${t.empresa || '—'}</div>
-          <div class="item-detail">
-            Ida: ${t.ida || '—'} | Volta: ${t.volta || '—'} | R$ ${t.custo.toFixed(2)}
-          </div>
-        </div>
-        <button class="danger" onclick="remover('transporte', ${i})">Remover</button>
-      </div>
-    `).join('');
+  renderCidades();
+  renderBagagem();
+  renderResumo();
+}
 
-  // Hotel
-  const lh = document.getElementById('listaHotel');
-  lh.innerHTML = estado.hotel.length === 0
-    ? '<div class="empty">Nenhum hotel adicionado</div>'
-    : estado.hotel.map((h, i) => `
-      <div class="item-row">
-        <div class="item-info">
-          <div class="item-title">${h.nome}</div>
-          <div class="item-detail">
-            ${h.end || '—'} | Check-in: ${h.checkin || '—'} | Check-out: ${h.checkout || '—'} | R$ ${h.custo.toFixed(2)}/noite
-          </div>
-        </div>
-        <button class="danger" onclick="remover('hotel', ${i})">Remover</button>
-      </div>
-    `).join('');
+// ---- CIDADES ----
+function renderCidades() {
+  const box = document.getElementById('listaCidades');
+  const badge = document.getElementById('badgeCidades');
+  badge.textContent = `${estado.cidades.length} cidade(s)`;
 
-  // Local
-  const ll = document.getElementById('listaLocal');
-  ll.innerHTML = estado.local.length === 0
-    ? '<div class="empty">Nenhum local adicionado</div>'
-    : estado.local.map((l, i) => `
-      <div class="item-row">
-        <div class="item-info">
-          <div class="item-title">${l.nome} <span class="badge">${l.cat}</span></div>
-          <div class="item-detail">${l.dia || '—'} ${l.hora ? 'às ' + l.hora : ''}</div>
-        </div>
-        <button class="danger" onclick="remover('local', ${i})">Remover</button>
-      </div>
-    `).join('');
+  if (estado.cidades.length === 0) {
+    box.innerHTML = '<div class="empty">Nenhuma cidade adicionada ainda. Adicione a primeira acima 👆</div>';
+    return;
+  }
 
-  // Bagagem
+  box.innerHTML = estado.cidades.map((c, cIdx) => {
+    const diasCidade = (c.chegada && c.saida)
+      ? Math.max(1, Math.ceil((new Date(c.saida) - new Date(c.chegada)) / 86400000) + 1)
+      : '—';
+
+    return `
+    <div class="cidade-card">
+      <div class="cidade-header">
+        <h3>
+          ${c.nome}
+          <small>(${diasCidade} dia(s) · ${c.locais.length} local(is))</small>
+        </h3>
+        <button class="danger" onclick="removerCidade(${cIdx})">Remover Cidade</button>
+      </div>
+
+      <!-- TRANSPORTE DA CIDADE -->
+      <div class="subtitulo">🚗 Transporte até / de ${c.nome}</div>
+      <div class="grid">
+        <div>
+          <label>Tipo</label>
+          <select id="transp_tipo_${cIdx}">
+            <option>Avião</option><option>Trem</option><option>Ônibus</option>
+            <option>Carro</option><option>Barco</option>
+          </select>
+        </div>
+        <div>
+          <label>Empresa</label>
+          <input id="transp_empresa_${cIdx}" placeholder="Ex: TAP">
+        </div>
+        <div>
+          <label>Ida</label>
+          <input id="transp_ida_${cIdx}" placeholder="Ex: 10/05 08:30">
+        </div>
+        <div>
+          <label>Volta</label>
+          <input id="transp_volta_${cIdx}" placeholder="Ex: 15/05 18:00">
+        </div>
+        <div>
+          <label>Custo (R$)</label>
+          <input id="transp_custo_${cIdx}" type="number" placeholder="0">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="small" onclick="addTransporte(${cIdx})">+ Transporte</button>
+      </div>
+      <div style="margin-top:10px;">
+        ${c.transporte.length === 0
+          ? '<div class="empty">Sem transporte</div>'
+          : c.transporte.map((t, i) => `
+            <div class="item-row">
+              <div class="item-info">
+                <div class="item-title">${t.tipo} - ${t.empresa || '—'}</div>
+                <div class="item-detail">Ida: ${t.ida || '—'} | Volta: ${t.volta || '—'} | R$ ${t.custo.toFixed(2)}</div>
+              </div>
+              <button class="danger" onclick="remover(${cIdx}, 'transporte', ${i})">x</button>
+            </div>
+          `).join('')}
+      </div>
+
+      <!-- HOTEL DA CIDADE -->
+      <div class="subtitulo">🏨 Hospedagem em ${c.nome}</div>
+      <div class="grid">
+        <div>
+          <label>Nome</label>
+          <input id="hotel_nome_${cIdx}" placeholder="Ex: Hotel Central">
+        </div>
+        <div>
+          <label>Endereço</label>
+          <input id="hotel_end_${cIdx}" placeholder="Ex: Av. Liberdade, 100">
+        </div>
+        <div>
+          <label>Check-in</label>
+          <input id="hotel_in_${cIdx}" type="date">
+        </div>
+        <div>
+          <label>Check-out</label>
+          <input id="hotel_out_${cIdx}" type="date">
+        </div>
+        <div>
+          <label>R$/noite</label>
+          <input id="hotel_custo_${cIdx}" type="number" placeholder="0">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="small" onclick="addHotel(${cIdx})">+ Hotel</button>
+      </div>
+      <div style="margin-top:10px;">
+        ${c.hotel.length === 0
+          ? '<div class="empty">Sem hotel cadastrado</div>'
+          : c.hotel.map((h, i) => `
+            <div class="item-row">
+              <div class="item-info">
+                <div class="item-title">${h.nome}</div>
+                <div class="item-detail">${h.end || '—'} | In: ${h.checkin || '—'} | Out: ${h.checkout || '—'} | R$ ${h.custo.toFixed(2)}/noite</div>
+              </div>
+              <button class="danger" onclick="remover(${cIdx}, 'hotel', ${i})">x</button>
+            </div>
+          `).join('')}
+      </div>
+
+      <!-- LOCAIS DA CIDADE -->
+      <div class="subtitulo">📍 Locais em ${c.nome}</div>
+      <div class="grid">
+        <div>
+          <label>Local</label>
+          <input id="local_nome_${cIdx}" placeholder="Ex: Torre de Belém">
+        </div>
+        <div>
+          <label>Dia / Data</label>
+          <input id="local_dia_${cIdx}" placeholder="Ex: Dia 2">
+        </div>
+        <div>
+          <label>Horário</label>
+          <input id="local_hora_${cIdx}" placeholder="Ex: 10:00">
+        </div>
+        <div>
+          <label>Categoria</label>
+          <select id="local_cat_${cIdx}">
+            <option>Turismo</option><option>Gastronomia</option><option>Compras</option>
+            <option>Cultura</option><option>Natureza</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="small" onclick="addLocal(${cIdx})">+ Local</button>
+      </div>
+      <div style="margin-top:10px;">
+        ${c.locais.length === 0
+          ? '<div class="empty">Sem locais cadastrados</div>'
+          : c.locais.map((l, i) => `
+            <div class="item-row">
+              <div class="item-info">
+                <div class="item-title">${l.nome} <span class="badge cinza">${l.cat}</span></div>
+                <div class="item-detail">${l.dia || '—'} ${l.hora ? 'às ' + l.hora : ''}</div>
+              </div>
+              <button class="danger" onclick="remover(${cIdx}, 'locais', ${i})">x</button>
+            </div>
+          `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ---- BAGAGEM ----
+function renderBagagem() {
   const lb = document.getElementById('listaBagagem');
   const badge = document.getElementById('badgeBagagem');
   badge.textContent = `${estado.bagagem.filter(b => !b.done).length} / ${estado.bagagem.length} itens`;
+
   if (estado.bagagem.length === 0) {
     lb.innerHTML = '<div class="empty">Clique em "Regenerar" para gerar a lista de bagagem</div>';
-  } else {
-    // Agrupar por categoria
-    const cats = {};
-    estado.bagagem.forEach((b, i) => {
-      if (!cats[b.cat]) cats[b.cat] = [];
-      cats[b.cat].push({ ...b, idx: i });
-    });
-    lb.innerHTML = Object.entries(cats).map(([cat, itens]) => `
-      <div style="margin-bottom:12px;">
-        <strong style="color:#667eea;font-size:0.9em;">${cat}</strong>
-        ${itens.map(it => `
-          <div class="bagagem-item ${it.done ? 'done' : ''}">
-            <input type="checkbox" ${it.done ? 'checked' : ''} onchange="toggleBagagem(${it.idx})">
-            <label>${it.item}</label>
-          </div>
-        `).join('')}
-      </div>
-    `).join('');
+    return;
   }
 
-  // Resumo
-  const custoTransp = estado.transporte.reduce((s, t) => s + t.custo, 0);
-  const custoHotel = estado.hotel.reduce((s, h) => {
-    if (h.checkin && h.checkout) {
-      const dias = Math.max(1, Math.ceil((new Date(h.checkout) - new Date(h.checkin)) / 86400000));
-      return s + h.custo * dias;
-    }
-    return s + h.custo;
-  }, 0);
+  const cats = {};
+  estado.bagagem.forEach((b, i) => {
+    if (!cats[b.cat]) cats[b.cat] = [];
+    cats[b.cat].push({ ...b, idx: i });
+  });
+
+  lb.innerHTML = Object.entries(cats).map(([cat, itens]) => `
+    <div style="margin-bottom:12px;">
+      <strong style="color:#667eea;font-size:0.9em;">${cat}</strong>
+      ${itens.map(it => `
+        <div class="bagagem-item ${it.done ? 'done' : ''}">
+          <input type="checkbox" ${it.done ? 'checked' : ''} onchange="toggleBagagem(${it.idx})">
+          <label>${it.item}</label>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+// ---- RESUMO ----
+function renderResumo() {
+  let custoTransp = 0, custoHotel = 0, totalLocais = 0;
+  estado.cidades.forEach(c => {
+    custoTransp += c.transporte.reduce((s, t) => s + t.custo, 0);
+    custoHotel += c.hotel.reduce((s, h) => {
+      if (h.checkin && h.checkout) {
+        const dias = Math.max(1, Math.ceil((new Date(h.checkout) - new Date(h.checkin)) / 86400000));
+        return s + h.custo * dias;
+      }
+      return s + h.custo;
+    }, 0);
+    totalLocais += c.locais.length;
+  });
+
   document.getElementById('resumoViagem').innerHTML = `
-    <strong>📊 Resumo:</strong> 
-    ${estado.transporte.length} transporte(s) | 
-    ${estado.hotel.length} hotel(is) | 
-    ${estado.local.length} local(is) | 
+    <strong>📊 Resumo geral:</strong>
+    ${estado.cidades.length} cidade(s) |
+    ${totalLocais} local(is) |
     ${estado.bagagem.filter(b => b.done).length}/${estado.bagagem.length} itens prontos
     <br>
     <strong>💰 Custo estimado:</strong> R$ ${(custoTransp + custoHotel).toFixed(2)}
+    <br>
+    <strong>🏙️ Cidades:</strong>
+    ${estado.cidades.length === 0
+      ? '<em>nenhuma</em>'
+      : estado.cidades.map(c => `${c.nome}${c.chegada && c.saida ? ` (${c.chegada} → ${c.saida})` : ''}`).join(' • ')}
   `;
 }
 
@@ -544,7 +582,7 @@ function atualizarTudo() {
   render();
 }
 
-// Auto-calcular dias ao mudar datas
+// Auto-calcular dias totais
 document.getElementById('dataIda').addEventListener('change', calcDias);
 document.getElementById('dataVolta').addEventListener('change', calcDias);
 function calcDias() {
