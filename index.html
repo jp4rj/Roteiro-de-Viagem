@@ -36,6 +36,7 @@
     border-radius: 6px; font-size: 0.95em; font-family: inherit;
   }
   input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; }
+  input:disabled, select:disabled { background: #f5f5f5; color: #666; }
   textarea { resize: vertical; min-height: 38px; }
   button {
     background: #667eea; color: white; border: none; padding: 10px 20px;
@@ -50,6 +51,8 @@
   button.small { padding: 6px 12px; font-size: 0.85em; }
   button.success { background: #10b981; }
   button.success:hover { background: #059669; }
+  button.edit { background: #f59e0b; padding: 6px 12px; font-size: 0.85em; }
+  button.edit:hover { background: #d97706; }
   .item-row {
     display: flex; gap: 8px; align-items: center; padding: 10px;
     background: #f8f9fa; border-radius: 6px; margin-bottom: 8px;
@@ -57,12 +60,14 @@
   .item-row .item-info { flex: 1; }
   .item-row .item-title { font-weight: 600; }
   .item-row .item-detail { font-size: 0.85em; color: #666; }
+  .item-row.editando { background: #fff8e1; border: 2px solid #f59e0b; }
   .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .badge {
     display: inline-block; background: #667eea; color: white;
     padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;
   }
   .badge.cinza { background: #999; }
+  .badge.editando { background: #f59e0b; }
   .bagagem-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
   .bagagem-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
   .bagagem-item label { margin: 0; cursor: pointer; font-weight: normal; }
@@ -93,30 +98,17 @@
   .subtitulo::before { content: ''; width: 4px; height: 16px; background: #667eea; border-radius: 2px; }
   .subtitulo.volta { color: #ef4444; }
   .subtitulo.volta::before { background: #ef4444; }
-  .subtitulo.conexao { color: #e65100; }
-  .subtitulo.conexao::before { background: #e65100; }
 
   .conexao-box {
-    background: #fff8f0;
-    border: 2px dashed #ffb74d;
-    border-radius: 10px;
-    padding: 12px;
-    margin: 12px 0;
+    background: #fff8f0; border: 2px dashed #ffb74d;
+    border-radius: 10px; padding: 12px; margin: 12px 0;
   }
   .conexao-box .conexao-titulo {
-    color: #e65100;
-    font-weight: 700;
-    font-size: 0.95em;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    color: #e65100; font-weight: 700; font-size: 0.95em;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
   }
   .conexao-box .conexao-hint {
-    font-size: 0.78em;
-    color: #999;
-    margin-top: 6px;
-    font-style: italic;
+    font-size: 0.78em; color: #999; margin-top: 6px; font-style: italic;
   }
 
   .timeline { position: relative; padding-left: 30px; margin-top: 15px; }
@@ -176,110 +168,81 @@
     margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
   }
   .topbar h1 { color: white; margin: 0; font-size: 1.8em; }
+  .topbar-acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* MODO VISUALIZAÇÃO */
+  .modo-view .form-add,
+  .modo-view .btn-add,
+  .modo-view .btn-del,
+  .modo-view .btn-edit { display: none !important; }
+
+  .aviso-modo {
+    background: #e8f5e9; border-left: 4px solid #10b981;
+    padding: 10px 15px; border-radius: 6px; margin-bottom: 15px;
+    font-size: 0.9em; color: #2e7d32; display: flex;
+    align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  }
+  .aviso-modo.edicao {
+    background: #fff8e1; border-left-color: #f59e0b; color: #b45309;
+  }
 
   .viagem-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    background: white; border-radius: 12px; overflow: hidden;
+    margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     transition: transform 0.15s, box-shadow 0.15s;
   }
   .viagem-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.2);
   }
   .viagem-card .capa {
-    width: 100%;
-    height: 160px;
-    background-size: cover;
-    background-position: center;
+    width: 100%; height: 160px; background-size: cover; background-position: center;
     background-color: #e0e6ff;
     background-image: linear-gradient(135deg, #667eea, #764ba2);
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
+    position: relative; display: flex; align-items: flex-end; overflow: hidden;
   }
   .viagem-card .capa::after {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.65) 100%);
     pointer-events: none;
   }
   .viagem-card .capa .titulo-capa {
-    position: relative;
-    z-index: 1;
-    color: white;
-    padding: 12px 16px;
-    font-size: 1.15em;
-    font-weight: 700;
+    position: relative; z-index: 1; color: white; padding: 12px 16px;
+    font-size: 1.15em; font-weight: 700;
     text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
+    display: flex; align-items: center; gap: 6px; width: 100%;
   }
   .viagem-card .capa .credito-foto {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    z-index: 1;
-    font-size: 0.65em;
-    color: rgba(255,255,255,0.9);
-    background: rgba(0,0,0,0.45);
-    padding: 2px 6px;
-    border-radius: 4px;
+    position: absolute; top: 8px; right: 10px; z-index: 1;
+    font-size: 0.65em; color: rgba(255,255,255,0.9);
+    background: rgba(0,0,0,0.45); padding: 2px 6px; border-radius: 4px;
   }
   .viagem-card .capa.vazia {
     align-items: flex-end;
     background: linear-gradient(135deg, var(--g1, #667eea), var(--g2, #764ba2));
   }
   .viagem-card .capa.vazia::after {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.5) 100%);
     pointer-events: none;
   }
   .viagem-card .capa .avatar-cidade {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+    position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    width: 60px; height: 60px; border-radius: 50%;
     background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     border: 2px solid rgba(255,255,255,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3em;
-    font-weight: 800;
-    color: white;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3em; font-weight: 800; color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4); z-index: 1;
   }
   .viagem-card .corpo { padding: 16px; }
   .viagem-card .meta {
-    font-size: 0.88em;
-    color: #666;
-    margin-bottom: 12px;
-    line-height: 1.6;
+    font-size: 0.88em; color: #666; margin-bottom: 12px; line-height: 1.6;
   }
-  .viagem-card .botoes {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
+  .viagem-card .botoes { display: flex; gap: 6px; flex-wrap: wrap; }
   .viagem-card.vazia {
-    padding: 40px;
-    text-align: center;
-    color: #999;
+    padding: 40px; text-align: center; color: #999;
   }
   .viagem-card.vazia:hover { transform: none; }
 
@@ -290,6 +253,15 @@
     z-index: 2000; display: none;
   }
   .banner-offline.ativo { display: block; }
+
+  /* BACKUP */
+  .backup-area {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .backup-area input[type="file"] {
+    padding: 8px; border: 2px dashed #ddd; border-radius: 6px;
+    font-size: 0.85em; cursor: pointer; background: #fafafa;
+  }
 
   @media (max-width: 600px) {
     .item-row { flex-wrap: wrap; }
@@ -308,7 +280,12 @@
 <div id="telaLista" class="container">
   <div class="topbar">
     <h1>✈️ Minhas Viagens</h1>
-    <button onclick="novaViagem()">+ Nova Viagem</button>
+    <div class="topbar-acoes">
+      <button class="secondary" onclick="exportarBackup()" title="Baixar backup de todas as viagens">💾 Backup</button>
+      <button class="secondary" onclick="document.getElementById('inputRestaurar').click()" title="Restaurar de um arquivo JSON">📂 Restaurar</button>
+      <input type="file" id="inputRestaurar" accept=".json,application/json" style="display:none" onchange="restaurarBackup(event)">
+      <button onclick="novaViagem()">+ Nova Viagem</button>
+    </div>
   </div>
   <div id="listaViagens"></div>
 </div>
@@ -318,8 +295,13 @@
   <div class="topbar">
     <button class="secondary" onclick="voltarParaLista()">← Minhas Viagens</button>
     <h1 id="tituloEditor" style="font-size:1.4em;flex:1;text-align:center;">Viagem</h1>
-    <button class="secondary" onclick="salvarViagemAtual()">💾 Salvar</button>
+    <div class="topbar-acoes">
+      <button id="btnAlternarModo" class="edit" onclick="alternarModo()">✏️ Editar</button>
+      <button id="btnSalvar" class="secondary" onclick="salvarViagemAtual()">💾 Salvar</button>
+    </div>
   </div>
+
+  <div id="avisoModo" class="aviso-modo"></div>
 
   <div class="card">
     <h2>🎯 Configuração da Viagem</h2>
@@ -344,7 +326,7 @@
         </select>
       </div>
     </div>
-    <div class="actions">
+    <div class="actions btn-add">
       <button onclick="atualizarTudo()">🔄 Atualizar / Gerar Bagagem</button>
     </div>
   </div>
@@ -352,12 +334,12 @@
   <div class="card">
     <h2>🏙️ Cidades da Viagem <span class="badge" id="badgeCidades">0</span></h2>
     <p style="font-size:0.85em;color:#888;margin-bottom:10px;">💡 Arraste o ícone <strong>⋮⋮</strong> para reordenar. A 1ª cidade com foto vira capa do card na lista.</p>
-    <div class="grid">
+    <div class="grid form-add">
       <div><label>Nome da cidade</label><input id="cidade_nome" placeholder="Ex: Lisboa"></div>
       <div><label>Chegada</label><input id="cidade_chegada" type="date"></div>
       <div><label>Saída</label><input id="cidade_saida" type="date"></div>
     </div>
-    <div class="actions"><button onclick="addCidade()">+ Adicionar Cidade</button></div>
+    <div class="actions btn-add"><button onclick="addCidade()">+ Adicionar Cidade</button></div>
     <div id="listaCidades" style="margin-top:15px;"></div>
   </div>
 
@@ -378,7 +360,7 @@
 
   <div class="card">
     <h2>🎒 Bagagem <span class="badge" id="badgeBagagem">0 itens</span></h2>
-    <div class="actions" style="margin-bottom:12px;">
+    <div class="actions btn-add" style="margin-bottom:12px;">
       <button onclick="gerarBagagem()">🔄 Regenerar</button>
       <button class="secondary" onclick="limparBagagem()">🗑️ Limpar</button>
     </div>
@@ -392,6 +374,7 @@
 // ===================== ESTADO GLOBAL =====================
 let store = { viagens: {}, atual: null };
 let estado = null;
+let modoEdicao = false; // false = visualização, true = edição
 
 // ===================== PERSISTÊNCIA =====================
 function carregarStore() {
@@ -408,6 +391,71 @@ function persistirStore() {
 }
 function gerarId() {
   return 'v_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+// ===================== BACKUP / RESTAURAR =====================
+function exportarBackup() {
+  const dados = {
+    versao: 1,
+    app: 'planejador-viagem',
+    exportadoEm: new Date().toISOString(),
+    viagens: store.viagens
+  };
+  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dataStr = new Date().toISOString().slice(0, 10);
+  a.download = `backup-viagens-${dataStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function restaurarBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const dados = JSON.parse(e.target.result);
+      if (!dados.viagens || typeof dados.viagens !== 'object') {
+        return alert('❌ Arquivo inválido. Não é um backup do planejador.');
+      }
+      const nViagens = Object.keys(dados.viagens).length;
+      const escolha = confirm(
+        `📂 Backup encontrado com ${nViagens} viagem(ns).\n\n` +
+        `OK = MESCLAR (mantém as viagens atuais + adiciona as do backup)\n` +
+        `Cancelar = SUBSTITUIR (apaga tudo e usa só o backup)`
+      );
+      if (escolha) {
+        // mesclar
+        Object.entries(dados.viagens).forEach(([id, v]) => {
+          // se já existir o ID, gera novo ID para não sobrescrever
+          if (store.viagens[id]) {
+            const novoId = gerarId();
+            v.id = novoId;
+            store.viagens[novoId] = v;
+          } else {
+            store.viagens[id] = v;
+          }
+        });
+      } else {
+        // substituir
+        if (!confirm('⚠️ Tem certeza? Todas as viagens atuais serão apagadas.')) return;
+        store.viagens = dados.viagens;
+        store.atual = null;
+      }
+      persistirStore();
+      renderLista();
+      alert(`✅ ${nViagens} viagem(ns) restaurada(s)!`);
+    } catch (err) {
+      alert('❌ Erro ao ler o arquivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = ''; // permite reenviar o mesmo arquivo
 }
 
 // ===================== FOTOS (Wikipedia) =====================
@@ -481,19 +529,14 @@ function iniciais(nome) {
 async function aplicarFotoCapa(el, listaCidades, nomeViagem) {
   if (!el) return;
   const titulo = el.querySelector('.titulo-capa');
-
   let res = null;
   let cidadeUsada = null;
   for (const cidade of listaCidades) {
     const nome = (cidade || '').trim();
     if (!nome) continue;
     res = await buscarFotoCidade(nome);
-    if (res && res.url) {
-      cidadeUsada = nome;
-      break;
-    }
+    if (res && res.url) { cidadeUsada = nome; break; }
   }
-
   if (res && res.url) {
     el.style.backgroundImage = `url('${res.url}')`;
     el.classList.remove('vazia');
@@ -615,43 +658,52 @@ function novaViagem() {
     }
   };
   persistirStore();
-  abrirViagem(id);
+  // primeira vez: entra em modo EDIÇÃO
+  abrirViagem(id, true);
 }
-function abrirViagem(id) {
+
+function abrirViagem(id, forcarEdicao) {
   if (!store.viagens[id]) return alert('Viagem não encontrada');
   store.atual = id;
   persistirStore();
   estado = JSON.parse(JSON.stringify(store.viagens[id].dados));
-  // normaliza cidades antigas (compatibilidade)
   estado.cidades = (estado.cidades || []).map(c => {
     const nova = {
       nome: c.nome || '',
       chegada: c.chegada || '',
       saida: c.saida || '',
-      transporte: c.transporte || [],  // usada apenas na 1ª cidade (chegada)
-      conexao: c.conexao || null,      // usada a partir da 2ª cidade
+      transporte: c.transporte || [],
+      conexao: c.conexao || null,
       hotel: c.hotel || [],
       locais: c.locais || [],
       volta: c.volta || null,
       _rascunhoChegada: null,
       _rascunhoConexao: null,
-      _rascunhoVolta: null
+      _rascunhoVolta: null,
+      _editando: null
     };
-    // migração: se a cidade tinha conexão só com tipo+custo, mantém
     if (nova.conexao && !nova.conexao.data) nova.conexao.data = '';
     if (nova.conexao && !nova.conexao.empresa) nova.conexao.empresa = '';
     if (nova.conexao && !nova.conexao.voucher) nova.conexao.voucher = '';
     if (nova.conexao && !nova.conexao.obs) nova.conexao.obs = '';
     return nova;
   });
+  estado._editando = null;
+  // modo: primeira vez (nova viagem) = edição; senão = visualização
+  modoEdicao = !!forcarEdicao;
   carregarEstadoNoForm();
   document.getElementById('telaLista').style.display = 'none';
   document.getElementById('telaEditor').style.display = 'block';
   document.getElementById('fabPDF').style.display = 'flex';
   document.getElementById('tituloEditor').textContent = store.viagens[id].nome;
+  aplicarModo();
   render();
-  if (!estado.bagagem || estado.bagagem.length === 0) gerarBagagem();
+  if (!estado.bagagem || estado.bagagem.length === 0) {
+    gerarBagagem();
+    if (!modoEdicao) salvarViagemAtual(true);
+  }
 }
+
 function duplicarViagem(id) {
   const orig = store.viagens[id];
   if (!orig) return;
@@ -665,6 +717,7 @@ function duplicarViagem(id) {
       c._rascunhoChegada = null;
       c._rascunhoConexao = null;
       c._rascunhoVolta = null;
+      c._editando = null;
     });
   }
   store.viagens[novoId] = copia;
@@ -679,9 +732,65 @@ function excluirViagem(id) {
   renderLista();
 }
 function voltarParaLista() {
-  salvarViagemAtual(true);
+  if (modoEdicao) salvarViagemAtual(true);
   mostrarLista();
 }
+
+// ===================== ALTERNAR MODO =====================
+function alternarModo() {
+  if (modoEdicao) {
+    // sair da edição → visualização (salva)
+    salvarViagemAtual(true);
+    modoEdicao = false;
+  } else {
+    // entrar em edição
+    modoEdicao = true;
+  }
+  aplicarModo();
+  render();
+}
+
+function aplicarModo() {
+  const telaEditor = document.getElementById('telaEditor');
+  const btnAlternar = document.getElementById('btnAlternarModo');
+  const btnSalvar = document.getElementById('btnSalvar');
+  const aviso = document.getElementById('avisoModo');
+
+  if (modoEdicao) {
+    telaEditor.classList.remove('modo-view');
+    telaEditor.classList.add('modo-edit');
+    btnAlternar.textContent = '👁️ Visualizar';
+    btnAlternar.className = 'secondary';
+    btnSalvar.style.display = '';
+    aviso.className = 'aviso-modo edicao';
+    aviso.innerHTML = `
+      <span>✏️ <strong>Modo Edição</strong> — você pode adicionar, editar e excluir.</span>
+      <button class="small secondary" onclick="alternarModo()">👁️ Ir para Visualização</button>
+    `;
+    // habilita inputs de configuração
+    ['destino','dataIda','dataVolta','dias','tipoViagem','clima','orc_alimentacao','orc_passeios','orc_extras'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = false;
+    });
+  } else {
+    telaEditor.classList.add('modo-view');
+    telaEditor.classList.remove('modo-edit');
+    btnAlternar.textContent = '✏️ Editar';
+    btnAlternar.className = 'edit';
+    btnSalvar.style.display = 'none';
+    aviso.className = 'aviso-modo';
+    aviso.innerHTML = `
+      <span>👁️ <strong>Modo Visualização</strong> — só leitura.</span>
+      <button class="small" onclick="alternarModo()">✏️ Editar Viagem</button>
+    `;
+    // desabilita inputs de configuração
+    ['destino','dataIda','dataVolta','dias','tipoViagem','clima','orc_alimentacao','orc_passeios','orc_extras'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = true;
+    });
+  }
+}
+
 function salvarViagemAtual(silencioso) {
   if (!store.atual || !estado) return;
   estado.destino = document.getElementById('destino').value;
@@ -699,7 +808,9 @@ function salvarViagemAtual(silencioso) {
     delete c._rascunhoChegada;
     delete c._rascunhoConexao;
     delete c._rascunhoVolta;
+    delete c._editando;
   });
+  delete limpo._editando;
 
   store.viagens[store.atual].dados = limpo;
   if (estado.destino) {
@@ -726,7 +837,6 @@ function carregarEstadoNoForm() {
 function salvarRascunhos() {
   if (!estado) return;
   estado.cidades.forEach((c, i) => {
-    // chegada (1ª cidade)
     if (document.getElementById(`chegada_empresa_${i}`)) {
       c._rascunhoChegada = {
         tipo: document.getElementById(`chegada_tipo_${i}`)?.value || 'Avião',
@@ -736,7 +846,6 @@ function salvarRascunhos() {
         voucher: document.getElementById(`chegada_voucher_${i}`)?.value || ''
       };
     }
-    // conexão (2ª em diante)
     if (document.getElementById(`conexao_empresa_${i}`)) {
       c._rascunhoConexao = {
         tipo: document.getElementById(`conexao_tipo_${i}`)?.value || 'Avião',
@@ -747,7 +856,6 @@ function salvarRascunhos() {
         obs: document.getElementById(`conexao_obs_${i}`)?.value || ''
       };
     }
-    // volta (última cidade)
     if (document.getElementById(`volta_empresa_${i}`)) {
       c._rascunhoVolta = {
         tipo: document.getElementById(`volta_tipo_${i}`)?.value || 'Avião',
@@ -771,7 +879,8 @@ function addCidade() {
     nome, chegada, saida,
     transporte: [], conexao: null, hotel: [], locais: [],
     volta: null,
-    _rascunhoChegada: null, _rascunhoConexao: null, _rascunhoVolta: null
+    _rascunhoChegada: null, _rascunhoConexao: null, _rascunhoVolta: null,
+    _editando: null
   });
   document.getElementById('cidade_nome').value = '';
   document.getElementById('cidade_chegada').value = '';
@@ -792,7 +901,6 @@ function moverCidade(from, to) {
   render();
 }
 
-// Chegada (só na 1ª cidade)
 function addChegada(cIdx) {
   const tipo = document.getElementById(`chegada_tipo_${cIdx}`).value;
   const empresa = document.getElementById(`chegada_empresa_${cIdx}`).value.trim();
@@ -805,7 +913,6 @@ function addChegada(cIdx) {
   render();
 }
 
-// Conexão (2ª cidade em diante)
 function salvarConexao(cIdx) {
   const tipo = document.getElementById(`conexao_tipo_${cIdx}`).value;
   const empresa = document.getElementById(`conexao_empresa_${cIdx}`).value.trim();
@@ -819,7 +926,6 @@ function salvarConexao(cIdx) {
   render();
 }
 
-// Volta (só na última cidade)
 function addVolta(cIdx) {
   const tipo = document.getElementById(`volta_tipo_${cIdx}`).value;
   const empresa = document.getElementById(`volta_empresa_${cIdx}`).value.trim();
@@ -863,6 +969,88 @@ function remover(cIdx, tipo, i) {
   } else {
     estado.cidades[cIdx][tipo].splice(i, 1);
   }
+  render();
+}
+
+// ===================== EDIÇÃO INLINE =====================
+function iniciarEdicao(cIdx, tipo, idx) {
+  salvarRascunhos();
+  estado.cidades[cIdx]._editando = { tipo, idx };
+  // também guarda os valores atuais em rascunho de edição
+  const c = estado.cidades[cIdx];
+  let item;
+  if (tipo === 'chegada') item = c.transporte[idx];
+  else if (tipo === 'hotel') item = c.hotel[idx];
+  else if (tipo === 'local') item = c.locais[idx];
+  else if (tipo === 'conexao') item = c.conexao;
+  else if (tipo === 'volta') item = c.volta;
+  else if (tipo === 'cidade') item = { nome: c.nome, chegada: c.chegada, saida: c.saida };
+  c._editandoValores = JSON.parse(JSON.stringify(item || {}));
+  render();
+  // scroll até o item
+  setTimeout(() => {
+    const el = document.getElementById(`edicao_${tipo}_${cIdx}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 50);
+}
+
+function cancelarEdicao(cIdx) {
+  estado.cidades[cIdx]._editando = null;
+  estado.cidades[cIdx]._editandoValores = null;
+  render();
+}
+
+function salvarEdicao(cIdx) {
+  const c = estado.cidades[cIdx];
+  const ed = c._editando;
+  if (!ed) return;
+  const { tipo, idx } = ed;
+
+  if (tipo === 'chegada') {
+    const t = c.transporte[idx];
+    t.tipo = document.getElementById(`ed_chegada_tipo_${cIdx}`).value;
+    t.empresa = document.getElementById(`ed_chegada_empresa_${cIdx}`).value.trim();
+    t.data = document.getElementById(`ed_chegada_data_${cIdx}`).value.trim();
+    t.custo = parseFloat(document.getElementById(`ed_chegada_custo_${cIdx}`).value) || 0;
+    t.voucher = document.getElementById(`ed_chegada_voucher_${cIdx}`).value.trim();
+  } else if (tipo === 'hotel') {
+    const h = c.hotel[idx];
+    h.nome = document.getElementById(`ed_hotel_nome_${cIdx}`).value.trim();
+    h.end = document.getElementById(`ed_hotel_end_${cIdx}`).value.trim();
+    h.checkin = document.getElementById(`ed_hotel_in_${cIdx}`).value;
+    h.checkout = document.getElementById(`ed_hotel_out_${cIdx}`).value;
+    h.custo = parseFloat(document.getElementById(`ed_hotel_custo_${cIdx}`).value) || 0;
+  } else if (tipo === 'local') {
+    const l = c.locais[idx];
+    l.nome = document.getElementById(`ed_local_nome_${cIdx}`).value.trim();
+    l.data = document.getElementById(`ed_local_data_${cIdx}`).value;
+    l.hora = document.getElementById(`ed_local_hora_${cIdx}`).value.trim();
+    l.cat = document.getElementById(`ed_local_cat_${cIdx}`).value;
+  } else if (tipo === 'conexao') {
+    c.conexao = {
+      tipo: document.getElementById(`ed_conexao_tipo_${cIdx}`).value,
+      empresa: document.getElementById(`ed_conexao_empresa_${cIdx}`).value.trim(),
+      data: document.getElementById(`ed_conexao_data_${cIdx}`).value.trim(),
+      custo: parseFloat(document.getElementById(`ed_conexao_custo_${cIdx}`).value) || 0,
+      voucher: document.getElementById(`ed_conexao_voucher_${cIdx}`).value.trim(),
+      obs: document.getElementById(`ed_conexao_obs_${cIdx}`).value.trim()
+    };
+  } else if (tipo === 'volta') {
+    c.volta = {
+      tipo: document.getElementById(`ed_volta_tipo_${cIdx}`).value,
+      empresa: document.getElementById(`ed_volta_empresa_${cIdx}`).value.trim(),
+      data: document.getElementById(`ed_volta_data_${cIdx}`).value.trim(),
+      custo: parseFloat(document.getElementById(`ed_volta_custo_${cIdx}`).value) || 0,
+      voucher: document.getElementById(`ed_volta_voucher_${cIdx}`).value.trim()
+    };
+  } else if (tipo === 'cidade') {
+    c.nome = document.getElementById(`ed_cidade_nome_${cIdx}`).value.trim();
+    c.chegada = document.getElementById(`ed_cidade_chegada_${cIdx}`).value;
+    c.saida = document.getElementById(`ed_cidade_saida_${cIdx}`).value;
+  }
+
+  c._editando = null;
+  c._editandoValores = null;
   render();
 }
 
@@ -922,7 +1110,11 @@ function gerarBagagem() {
   render();
 }
 function limparBagagem() { if (confirm('Limpar toda a bagagem?')) { estado.bagagem = []; render(); } }
-function toggleBagagem(i) { estado.bagagem[i].done = !estado.bagagem[i].done; render(); }
+function toggleBagagem(i) {
+  if (!modoEdicao) return;
+  estado.bagagem[i].done = !estado.bagagem[i].done;
+  render();
+}
 
 // ===================== RENDER =====================
 function render() {
@@ -931,9 +1123,11 @@ function render() {
   renderTimeline();
   renderBagagem();
   renderOrcamento();
-  estado.orcamento.alimentacao = parseFloat(document.getElementById('orc_alimentacao').value) || 0;
-  estado.orcamento.passeios = parseFloat(document.getElementById('orc_passeios').value) || 0;
-  estado.orcamento.extras = parseFloat(document.getElementById('orc_extras').value) || 0;
+  if (modoEdicao) {
+    estado.orcamento.alimentacao = parseFloat(document.getElementById('orc_alimentacao').value) || 0;
+    estado.orcamento.passeios = parseFloat(document.getElementById('orc_passeios').value) || 0;
+    estado.orcamento.extras = parseFloat(document.getElementById('orc_extras').value) || 0;
+  }
 }
 
 function renderCidades() {
@@ -951,167 +1145,329 @@ function renderCidades() {
       ? Math.max(1, Math.ceil((new Date(c.saida) - new Date(c.chegada)) / 86400000) + 1) : '—';
     const isPrimeira = cIdx === 0;
     const isUltima = cIdx === ultimoIdx;
+    const ed = c._editando;
 
     const rCh = c._rascunhoChegada || {};
     const rCx = c._rascunhoConexao || {};
     const rV = c._rascunhoVolta || {};
 
-    // ====== BLOCO CONEXÃO (2ª cidade em diante) ======
-    const conexaoHtml = !isPrimeira ? `
-      <div class="conexao-box">
-        <div class="conexao-titulo">
-          🔗 Conexão ${estado.cidades[cIdx-1].nome} → ${c.nome}
+    // ===== Header da cidade =====
+    const cidadeEditando = ed && ed.tipo === 'cidade';
+    const headerCidadeHtml = cidadeEditando ? `
+      <div class="cidade-header">
+        <div class="grid" style="flex:1;">
+          <div><label>Nome</label><input id="ed_cidade_nome_${cIdx}" value="${escapeHtml(c.nome)}"></div>
+          <div><label>Chegada</label><input id="ed_cidade_chegada_${cIdx}" type="date" value="${c.chegada || ''}"></div>
+          <div><label>Saída</label><input id="ed_cidade_saida_${cIdx}" type="date" value="${c.saida || ''}"></div>
         </div>
-        <div class="grid">
-          <div><label>Tipo</label><select id="conexao_tipo_${cIdx}">
-            ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
-              `<option ${(rCx.tipo || c.conexao?.tipo) === t ? 'selected' : ''}>${t}</option>`).join('')}
-          </select></div>
-          <div><label>Empresa</label><input id="conexao_empresa_${cIdx}" placeholder="Ex: Ryanair" value="${escapeHtml(rCx.empresa || c.conexao?.empresa || '')}"></div>
-          <div><label>Data/hora</label><input id="conexao_data_${cIdx}" placeholder="Ex: 12/05 14:00" value="${escapeHtml(rCx.data || c.conexao?.data || '')}"></div>
-          <div><label>Custo (R$)</label><input id="conexao_custo_${cIdx}" type="number" placeholder="0" value="${rCx.custo || c.conexao?.custo || ''}"></div>
-          <div><label>Voucher / Reserva</label><input id="conexao_voucher_${cIdx}" placeholder="Ex: RY456" value="${escapeHtml(rCx.voucher || c.conexao?.voucher || '')}"></div>
-          <div><label>Observação</label><input id="conexao_obs_${cIdx}" placeholder="Ex: Bagagem de mão apenas" value="${escapeHtml(rCx.obs || c.conexao?.obs || '')}"></div>
+        <div class="actions" style="margin:0;">
+          <button class="small success" onclick="salvarEdicao(${cIdx})">💾 Salvar</button>
+          <button class="small secondary" onclick="cancelarEdicao(${cIdx})">✖ Cancelar</button>
         </div>
-        <div class="actions">
-          <button class="small" onclick="salvarConexao(${cIdx})">💾 Salvar Conexão</button>
-          ${c.conexao ? `<button class="small danger" onclick="remover(${cIdx}, 'conexao')">🗑️ Remover</button>` : ''}
-        </div>
-        ${!c.conexao ? '<div class="conexao-hint">Sem conexão registrada</div>' :
-          `<div class="item-row" style="border-left:3px solid #e65100;margin-top:10px;">
-            <div class="item-info">
-              <div class="item-title">${c.conexao.tipo} - ${c.conexao.empresa || '—'}</div>
-              <div class="item-detail">
-                ${c.conexao.data || '—'} | R$ ${c.conexao.custo.toFixed(2)}
-                ${c.conexao.voucher ? ` | 🎟️ ${escapeHtml(c.conexao.voucher)}` : ''}
-                ${c.conexao.obs ? `<br><em style="color:#999;">${escapeHtml(c.conexao.obs)}</em>` : ''}
-              </div>
-            </div>
-          </div>`}
       </div>
-    ` : '';
+    ` : `
+      <div class="cidade-header">
+        <span class="drag-handle" title="Arraste para reordenar">⋮⋮</span>
+        <h3>${cIdx + 1}. ${c.nome} <small>(${diasCidade} dia(s) · ${c.locais.length} local(is))</small></h3>
+        <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'cidade')">✏️ Editar</button>
+        <button class="danger btn-del" onclick="removerCidade(${cIdx})">Remover</button>
+      </div>
+    `;
 
-    // ====== BLOCO CHEGADA (só 1ª cidade) ======
-    const chegadaHtml = isPrimeira ? `
-      <div class="subtitulo">🛫 Chegada em ${c.nome}</div>
-      <div class="grid">
-        <div><label>Tipo</label><select id="chegada_tipo_${cIdx}">
-          ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
-            `<option ${rCh.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
-        </select></div>
-        <div><label>Empresa</label><input id="chegada_empresa_${cIdx}" placeholder="Ex: TAP" value="${escapeHtml(rCh.empresa || '')}"></div>
-        <div><label>Data/hora</label><input id="chegada_data_${cIdx}" placeholder="Ex: 10/05 08:30" value="${escapeHtml(rCh.data || '')}"></div>
-        <div><label>Custo (R$)</label><input id="chegada_custo_${cIdx}" type="number" placeholder="0" value="${rCh.custo || ''}"></div>
-        <div><label>Voucher / Reserva</label><input id="chegada_voucher_${cIdx}" placeholder="Ex: ABC123" value="${escapeHtml(rCh.voucher || '')}"></div>
-      </div>
-      <div class="actions"><button class="small" onclick="addChegada(${cIdx})">+ Adicionar Chegada</button></div>
-      <div style="margin-top:10px;">
-        ${c.transporte.length === 0 ? '<div class="empty">Sem transporte de chegada</div>' :
-          c.transporte.map((t, i) => `
-            <div class="item-row">
-              <div class="item-info">
-                <div class="item-title">${t.tipo} - ${t.empresa || '—'}</div>
-                <div class="item-detail">
-                  ${t.data || '—'} | R$ ${t.custo.toFixed(2)}
-                  ${t.voucher ? ` | 🎟️ ${escapeHtml(t.voucher)}` : ''}
+    // ===== Conexão =====
+    let conexaoHtml = '';
+    if (!isPrimeira) {
+      const conexaoEditando = ed && ed.tipo === 'conexao';
+      if (conexaoEditando) {
+        conexaoHtml = `
+          <div class="conexao-box" id="edicao_conexao_${cIdx}">
+            <div class="conexao-titulo">✏️ Editando Conexão ${estado.cidades[cIdx-1].nome} → ${c.nome}</div>
+            <div class="grid">
+              <div><label>Tipo</label><select id="ed_conexao_tipo_${cIdx}">
+                ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
+                  `<option ${c.conexao?.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
+              </select></div>
+              <div><label>Empresa</label><input id="ed_conexao_empresa_${cIdx}" value="${escapeHtml(c.conexao?.empresa || '')}"></div>
+              <div><label>Data/hora</label><input id="ed_conexao_data_${cIdx}" value="${escapeHtml(c.conexao?.data || '')}"></div>
+              <div><label>Custo (R$)</label><input id="ed_conexao_custo_${cIdx}" type="number" value="${c.conexao?.custo || 0}"></div>
+              <div><label>Voucher / Reserva</label><input id="ed_conexao_voucher_${cIdx}" value="${escapeHtml(c.conexao?.voucher || '')}"></div>
+              <div><label>Observação</label><input id="ed_conexao_obs_${cIdx}" value="${escapeHtml(c.conexao?.obs || '')}"></div>
+            </div>
+            <div class="actions">
+              <button class="small success" onclick="salvarEdicao(${cIdx})">💾 Salvar</button>
+              <button class="small secondary" onclick="cancelarEdicao(${cIdx})">✖ Cancelar</button>
+            </div>
+          </div>
+        `;
+      } else {
+        conexaoHtml = `
+          <div class="conexao-box">
+            <div class="conexao-titulo">🔗 Conexão ${estado.cidades[cIdx-1].nome} → ${c.nome}</div>
+            ${modoEdicao ? `
+              <div class="grid form-add">
+                <div><label>Tipo</label><select id="conexao_tipo_${cIdx}">
+                  ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
+                    `<option ${(rCx.tipo || c.conexao?.tipo) === t ? 'selected' : ''}>${t}</option>`).join('')}
+                </select></div>
+                <div><label>Empresa</label><input id="conexao_empresa_${cIdx}" placeholder="Ex: Ryanair" value="${escapeHtml(rCx.empresa || c.conexao?.empresa || '')}"></div>
+                <div><label>Data/hora</label><input id="conexao_data_${cIdx}" placeholder="Ex: 12/05 14:00" value="${escapeHtml(rCx.data || c.conexao?.data || '')}"></div>
+                <div><label>Custo (R$)</label><input id="conexao_custo_${cIdx}" type="number" placeholder="0" value="${rCx.custo || c.conexao?.custo || ''}"></div>
+                <div><label>Voucher / Reserva</label><input id="conexao_voucher_${cIdx}" placeholder="Ex: RY456" value="${escapeHtml(rCx.voucher || c.conexao?.voucher || '')}"></div>
+                <div><label>Observação</label><input id="conexao_obs_${cIdx}" placeholder="Ex: Bagagem de mão apenas" value="${escapeHtml(rCx.obs || c.conexao?.obs || '')}"></div>
+              </div>
+              <div class="actions btn-add">
+                <button class="small" onclick="salvarConexao(${cIdx})">💾 Salvar Conexão</button>
+              </div>
+            ` : ''}
+            ${!c.conexao ? `<div class="conexao-hint">${modoEdicao ? 'Sem conexão registrada' : 'Sem conexão registrada'}</div>` :
+              `<div class="item-row" style="border-left:3px solid #e65100;${modoEdicao ? 'margin-top:10px;' : ''}">
+                <div class="item-info">
+                  <div class="item-title">${c.conexao.tipo} - ${c.conexao.empresa || '—'}</div>
+                  <div class="item-detail">
+                    ${c.conexao.data || '—'} | R$ ${c.conexao.custo.toFixed(2)}
+                    ${c.conexao.voucher ? ` | 🎟️ ${escapeHtml(c.conexao.voucher)}` : ''}
+                    ${c.conexao.obs ? `<br><em style="color:#999;">${escapeHtml(c.conexao.obs)}</em>` : ''}
+                  </div>
                 </div>
-              </div>
-              <button class="danger" onclick="remover(${cIdx}, 'transporte', ${i})">x</button>
-            </div>`).join('')}
-      </div>
-    ` : '';
+                <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'conexao')">✏️</button>
+                <button class="danger btn-del" onclick="remover(${cIdx}, 'conexao')">x</button>
+              </div>`}
+          </div>
+        `;
+      }
+    }
 
-    // ====== BLOCO VOLTA (só última cidade) ======
-    const voltaHtml = isUltima ? `
-      <div class="subtitulo volta">🛬 Volta para casa (de ${c.nome})</div>
-      <div class="grid">
-        <div><label>Tipo</label><select id="volta_tipo_${cIdx}">
-          ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
-            `<option ${(rV.tipo || c.volta?.tipo) === t ? 'selected' : ''}>${t}</option>`).join('')}
-        </select></div>
-        <div><label>Empresa</label><input id="volta_empresa_${cIdx}" placeholder="Ex: TAP" value="${escapeHtml(rV.empresa || c.volta?.empresa || '')}"></div>
-        <div><label>Data/hora</label><input id="volta_data_${cIdx}" placeholder="Ex: 20/05 18:00" value="${escapeHtml(rV.data || c.volta?.data || '')}"></div>
-        <div><label>Custo (R$)</label><input id="volta_custo_${cIdx}" type="number" placeholder="0" value="${rV.custo || c.volta?.custo || ''}"></div>
-        <div><label>Voucher / Reserva</label><input id="volta_voucher_${cIdx}" placeholder="Ex: XYZ999" value="${escapeHtml(rV.voucher || c.volta?.voucher || '')}"></div>
-      </div>
-      <div class="actions">
-        <button class="small" style="background:#ef4444;" onclick="addVolta(${cIdx})">💾 Salvar Volta</button>
-        ${c.volta ? `<button class="small danger" onclick="remover(${cIdx}, 'volta')">🗑️ Remover</button>` : ''}
-      </div>
-      <div style="margin-top:10px;">
-        ${!c.volta ? '<div class="empty">Sem transporte de volta</div>' :
-          `<div class="item-row" style="border-left:3px solid #ef4444;">
-            <div class="item-info">
-              <div class="item-title">${c.volta.tipo} - ${c.volta.empresa || '—'} <span class="badge cinza">VOLTA</span></div>
-              <div class="item-detail">
-                ${c.volta.data || '—'} | R$ ${c.volta.custo.toFixed(2)}
-                ${c.volta.voucher ? ` | 🎟️ ${escapeHtml(c.volta.voucher)}` : ''}
+    // ===== Chegada (1ª cidade) =====
+    let chegadaHtml = '';
+    if (isPrimeira) {
+      const chegadaEditando = ed && ed.tipo === 'chegada';
+      chegadaHtml = `
+        <div class="subtitulo">🛫 Chegada em ${c.nome}</div>
+        ${modoEdicao && !chegadaEditando ? `
+          <div class="grid form-add">
+            <div><label>Tipo</label><select id="chegada_tipo_${cIdx}">
+              ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
+                `<option ${rCh.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
+            </select></div>
+            <div><label>Empresa</label><input id="chegada_empresa_${cIdx}" placeholder="Ex: TAP" value="${escapeHtml(rCh.empresa || '')}"></div>
+            <div><label>Data/hora</label><input id="chegada_data_${cIdx}" placeholder="Ex: 10/05 08:30" value="${escapeHtml(rCh.data || '')}"></div>
+            <div><label>Custo (R$)</label><input id="chegada_custo_${cIdx}" type="number" placeholder="0" value="${rCh.custo || ''}"></div>
+            <div><label>Voucher / Reserva</label><input id="chegada_voucher_${cIdx}" placeholder="Ex: ABC123" value="${escapeHtml(rCh.voucher || '')}"></div>
+          </div>
+          <div class="actions btn-add"><button class="small" onclick="addChegada(${cIdx})">+ Adicionar Chegada</button></div>
+        ` : ''}
+        <div style="margin-top:10px;">
+          ${c.transporte.length === 0 ? '<div class="empty">Sem transporte de chegada</div>' :
+            c.transporte.map((t, i) => {
+              const editando = ed && ed.tipo === 'chegada' && ed.idx === i;
+              if (editando) {
+                return `
+                  <div class="item-row editando" id="edicao_chegada_${cIdx}">
+                    <div style="flex:1;">
+                      <div class="grid">
+                        <div><label>Tipo</label><select id="ed_chegada_tipo_${cIdx}">
+                          ${['Avião','Trem','Ônibus','Carro','Barco'].map(tt =>
+                            `<option ${t.tipo === tt ? 'selected' : ''}>${tt}</option>`).join('')}
+                        </select></div>
+                        <div><label>Empresa</label><input id="ed_chegada_empresa_${cIdx}" value="${escapeHtml(t.empresa || '')}"></div>
+                        <div><label>Data/hora</label><input id="ed_chegada_data_${cIdx}" value="${escapeHtml(t.data || '')}"></div>
+                        <div><label>Custo</label><input id="ed_chegada_custo_${cIdx}" type="number" value="${t.custo || 0}"></div>
+                        <div><label>Voucher</label><input id="ed_chegada_voucher_${cIdx}" value="${escapeHtml(t.voucher || '')}"></div>
+                      </div>
+                      <div class="actions">
+                        <button class="small success" onclick="salvarEdicao(${cIdx})">💾 Salvar</button>
+                        <button class="small secondary" onclick="cancelarEdicao(${cIdx})">✖ Cancelar</button>
+                      </div>
+                    </div>
+                  </div>`;
+              }
+              return `
+                <div class="item-row">
+                  <div class="item-info">
+                    <div class="item-title">${t.tipo} - ${t.empresa || '—'}</div>
+                    <div class="item-detail">
+                      ${t.data || '—'} | R$ ${t.custo.toFixed(2)}
+                      ${t.voucher ? ` | 🎟️ ${escapeHtml(t.voucher)}` : ''}
+                    </div>
+                  </div>
+                  <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'chegada', ${i})">✏️</button>
+                  <button class="danger btn-del" onclick="remover(${cIdx}, 'transporte', ${i})">x</button>
+                </div>`;
+            }).join('')}
+        </div>
+      `;
+    }
+
+    // ===== Volta (última) =====
+    let voltaHtml = '';
+    if (isUltima) {
+      const voltaEditando = ed && ed.tipo === 'volta';
+      if (voltaEditando) {
+        voltaHtml = `
+          <div class="subtitulo volta">✏️ Editando Volta para casa</div>
+          <div class="item-row editando" id="edicao_volta_${cIdx}">
+            <div style="flex:1;">
+              <div class="grid">
+                <div><label>Tipo</label><select id="ed_volta_tipo_${cIdx}">
+                  ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
+                    `<option ${c.volta?.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
+                </select></div>
+                <div><label>Empresa</label><input id="ed_volta_empresa_${cIdx}" value="${escapeHtml(c.volta?.empresa || '')}"></div>
+                <div><label>Data/hora</label><input id="ed_volta_data_${cIdx}" value="${escapeHtml(c.volta?.data || '')}"></div>
+                <div><label>Custo</label><input id="ed_volta_custo_${cIdx}" type="number" value="${c.volta?.custo || 0}"></div>
+                <div><label>Voucher</label><input id="ed_volta_voucher_${cIdx}" value="${escapeHtml(c.volta?.voucher || '')}"></div>
+              </div>
+              <div class="actions">
+                <button class="small success" onclick="salvarEdicao(${cIdx})">💾 Salvar</button>
+                <button class="small secondary" onclick="cancelarEdicao(${cIdx})">✖ Cancelar</button>
               </div>
             </div>
-          </div>`}
-      </div>
-    ` : '';
+          </div>
+        `;
+      } else {
+        voltaHtml = `
+          <div class="subtitulo volta">🛬 Volta para casa (de ${c.nome})</div>
+          ${modoEdicao ? `
+            <div class="grid form-add">
+              <div><label>Tipo</label><select id="volta_tipo_${cIdx}">
+                ${['Avião','Trem','Ônibus','Carro','Barco'].map(t =>
+                  `<option ${(rV.tipo || c.volta?.tipo) === t ? 'selected' : ''}>${t}</option>`).join('')}
+              </select></div>
+              <div><label>Empresa</label><input id="volta_empresa_${cIdx}" placeholder="Ex: TAP" value="${escapeHtml(rV.empresa || c.volta?.empresa || '')}"></div>
+              <div><label>Data/hora</label><input id="volta_data_${cIdx}" placeholder="Ex: 20/05 18:00" value="${escapeHtml(rV.data || c.volta?.data || '')}"></div>
+              <div><label>Custo (R$)</label><input id="volta_custo_${cIdx}" type="number" placeholder="0" value="${rV.custo || c.volta?.custo || ''}"></div>
+              <div><label>Voucher / Reserva</label><input id="volta_voucher_${cIdx}" placeholder="Ex: XYZ999" value="${escapeHtml(rV.voucher || c.volta?.voucher || '')}"></div>
+            </div>
+            <div class="actions btn-add">
+              <button class="small" style="background:#ef4444;" onclick="addVolta(${cIdx})">💾 Salvar Volta</button>
+            </div>
+          ` : ''}
+          <div style="margin-top:10px;">
+            ${!c.volta ? '<div class="empty">Sem transporte de volta</div>' :
+              `<div class="item-row" style="border-left:3px solid #ef4444;">
+                <div class="item-info">
+                  <div class="item-title">${c.volta.tipo} - ${c.volta.empresa || '—'} <span class="badge cinza">VOLTA</span></div>
+                  <div class="item-detail">
+                    ${c.volta.data || '—'} | R$ ${c.volta.custo.toFixed(2)}
+                    ${c.volta.voucher ? ` | 🎟️ ${escapeHtml(c.volta.voucher)}` : ''}
+                  </div>
+                </div>
+                <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'volta')">✏️</button>
+                <button class="danger btn-del" onclick="remover(${cIdx}, 'volta')">x</button>
+              </div>`}
+          </div>
+        `;
+      }
+    }
+
+    // ===== Hotel =====
+    const hoteisHtml = c.hotel.map((h, i) => {
+      const editando = ed && ed.tipo === 'hotel' && ed.idx === i;
+      if (editando) {
+        return `
+          <div class="item-row editando" id="edicao_hotel_${cIdx}">
+            <div style="flex:1;">
+              <div class="grid">
+                <div><label>Nome</label><input id="ed_hotel_nome_${cIdx}" value="${escapeHtml(h.nome || '')}"></div>
+                <div><label>Endereço</label><input id="ed_hotel_end_${cIdx}" value="${escapeHtml(h.end || '')}"></div>
+                <div><label>Check-in</label><input id="ed_hotel_in_${cIdx}" type="date" value="${h.checkin || ''}"></div>
+                <div><label>Check-out</label><input id="ed_hotel_out_${cIdx}" type="date" value="${h.checkout || ''}"></div>
+                <div><label>R$/noite</label><input id="ed_hotel_custo_${cIdx}" type="number" value="${h.custo || 0}"></div>
+              </div>
+              <div class="actions">
+                <button class="small success" onclick="salvarEdicao(${cIdx})">💾 Salvar</button>
+                <button class="small secondary" onclick="cancelarEdicao(${cIdx})">✖ Cancelar</button>
+              </div>
+            </div>
+          </div>`;
+      }
+      return `
+        <div class="item-row">
+          <div class="item-info">
+            <div class="item-title">${h.nome}</div>
+            <div class="item-detail">${h.end || '—'} | In: ${h.checkin || '—'} | Out: ${h.checkout || '—'} | R$ ${h.custo.toFixed(2)}/noite</div>
+          </div>
+          <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'hotel', ${i})">✏️</button>
+          <button class="danger btn-del" onclick="remover(${cIdx}, 'hotel', ${i})">x</button>
+        </div>`;
+    }).join('');
+
+    // ===== Local =====
+    const locaisHtml = c.locais.map((l, i) => {
+      const editando = ed && ed.tipo === 'local' && ed.idx === i;
+      if (editando) {
+        return `
+          <div class="item-row editando" id="edicao_local_${cIdx}">
+            <div style="flex:1;">
+              <div class="grid">
+                <div><label>Local</label><input id="ed_local_nome_${cIdx}" value="${escapeHtml(l.nome || '')}"></div>
+                <div><label>Data</label><input id="ed_local_data_${cIdx}" type="date" value="${l.data || ''}"></div>
+                <div><label>Horário</label><input id="ed_local_hora_${cIdx}" value="${escapeHtml(l.hora || '')}"></div>
+                <div><label>Categoria</label><select id="ed_local_cat_${cIdx}">
+                  ${['Turismo','Gastronomia','Compras','Cultura','Natureza'].map(cc =>
+                    `<option ${l.cat === cc ? 'selected' : ''}>${cc}</option>`).join('')}
+                </select></div>
+              </div>
+              <div class="actions">
+                <button class="small success" onclick="salvarEdicao(${cIdx})">💾 Salvar</button>
+                <button class="small secondary" onclick="cancelarEdicao(${cIdx})">✖ Cancelar</button>
+              </div>
+            </div>
+          </div>`;
+      }
+      return `
+        <div class="item-row">
+          <div class="item-info">
+            <div class="item-title">${l.nome} <span class="badge cinza">${l.cat}</span></div>
+            <div class="item-detail">${l.data || '—'} ${l.hora ? 'às ' + l.hora : ''}</div>
+          </div>
+          <button class="edit btn-edit" onclick="iniciarEdicao(${cIdx}, 'local', ${i})">✏️</button>
+          <button class="danger btn-del" onclick="remover(${cIdx}, 'locais', ${i})">x</button>
+        </div>`;
+    }).join('');
 
     return `
-    <div class="cidade-card" draggable="true"
+    <div class="cidade-card" draggable="${modoEdicao ? 'true' : 'false'}"
          ondragstart="onDragStart(event, ${cIdx})"
          ondragover="onDragOver(event)"
          ondragleave="onDragLeave(event)"
          ondrop="onDrop(event, ${cIdx})"
          ondragend="onDragEnd(event)">
-      <div class="cidade-header">
-        <span class="drag-handle" title="Arraste para reordenar">⋮⋮</span>
-        <h3>${cIdx + 1}. ${c.nome} <small>(${diasCidade} dia(s) · ${c.locais.length} local(is))</small></h3>
-        <button class="danger" onclick="removerCidade(${cIdx})">Remover</button>
-      </div>
+      ${headerCidadeHtml}
 
       ${conexaoHtml}
       ${chegadaHtml}
       ${voltaHtml}
 
-      <!-- HOTEL -->
       <div class="subtitulo">🏨 Hospedagem</div>
-      <div class="grid">
-        <div><label>Nome</label><input id="hotel_nome_${cIdx}" placeholder="Ex: Hotel Central"></div>
-        <div><label>Endereço</label><input id="hotel_end_${cIdx}" placeholder="Ex: Av. Liberdade, 100"></div>
-        <div><label>Check-in</label><input id="hotel_in_${cIdx}" type="date"></div>
-        <div><label>Check-out</label><input id="hotel_out_${cIdx}" type="date"></div>
-        <div><label>R$/noite</label><input id="hotel_custo_${cIdx}" type="number" placeholder="0"></div>
-      </div>
-      <div class="actions"><button class="small" onclick="addHotel(${cIdx})">+ Hotel</button></div>
+      ${modoEdicao ? `
+        <div class="grid form-add">
+          <div><label>Nome</label><input id="hotel_nome_${cIdx}" placeholder="Ex: Hotel Central"></div>
+          <div><label>Endereço</label><input id="hotel_end_${cIdx}" placeholder="Ex: Av. Liberdade, 100"></div>
+          <div><label>Check-in</label><input id="hotel_in_${cIdx}" type="date"></div>
+          <div><label>Check-out</label><input id="hotel_out_${cIdx}" type="date"></div>
+          <div><label>R$/noite</label><input id="hotel_custo_${cIdx}" type="number" placeholder="0"></div>
+        </div>
+        <div class="actions btn-add"><button class="small" onclick="addHotel(${cIdx})">+ Hotel</button></div>
+      ` : ''}
       <div style="margin-top:10px;">
-        ${c.hotel.length === 0 ? '<div class="empty">Sem hotel</div>' :
-          c.hotel.map((h, i) => `
-            <div class="item-row">
-              <div class="item-info">
-                <div class="item-title">${h.nome}</div>
-                <div class="item-detail">${h.end || '—'} | In: ${h.checkin || '—'} | Out: ${h.checkout || '—'} | R$ ${h.custo.toFixed(2)}/noite</div>
-              </div>
-              <button class="danger" onclick="remover(${cIdx}, 'hotel', ${i})">x</button>
-            </div>`).join('')}
+        ${c.hotel.length === 0 ? '<div class="empty">Sem hotel</div>' : hoteisHtml}
       </div>
 
-      <!-- LOCAIS -->
       <div class="subtitulo">📍 Locais</div>
-      <div class="grid">
-        <div><label>Local</label><input id="local_nome_${cIdx}" placeholder="Ex: Torre de Belém"></div>
-        <div><label>Data</label><input id="local_data_${cIdx}" type="date"></div>
-        <div><label>Horário</label><input id="local_hora_${cIdx}" placeholder="Ex: 10:00"></div>
-        <div><label>Categoria</label><select id="local_cat_${cIdx}">
-          <option>Turismo</option><option>Gastronomia</option><option>Compras</option><option>Cultura</option><option>Natureza</option>
-        </select></div>
-      </div>
-      <div class="actions"><button class="small" onclick="addLocal(${cIdx})">+ Local</button></div>
+      ${modoEdicao ? `
+        <div class="grid form-add">
+          <div><label>Local</label><input id="local_nome_${cIdx}" placeholder="Ex: Torre de Belém"></div>
+          <div><label>Data</label><input id="local_data_${cIdx}" type="date"></div>
+          <div><label>Horário</label><input id="local_hora_${cIdx}" placeholder="Ex: 10:00"></div>
+          <div><label>Categoria</label><select id="local_cat_${cIdx}">
+            <option>Turismo</option><option>Gastronomia</option><option>Compras</option><option>Cultura</option><option>Natureza</option>
+          </select></div>
+        </div>
+        <div class="actions btn-add"><button class="small" onclick="addLocal(${cIdx})">+ Local</button></div>
+      ` : ''}
       <div style="margin-top:10px;">
-        ${c.locais.length === 0 ? '<div class="empty">Sem locais</div>' :
-          c.locais.map((l, i) => `
-            <div class="item-row">
-              <div class="item-info">
-                <div class="item-title">${l.nome} <span class="badge cinza">${l.cat}</span></div>
-                <div class="item-detail">${l.data || '—'} ${l.hora ? 'às ' + l.hora : ''}</div>
-              </div>
-              <button class="danger" onclick="remover(${cIdx}, 'locais', ${i})">x</button>
-            </div>`).join('')}
+        ${c.locais.length === 0 ? '<div class="empty">Sem locais</div>' : locaisHtml}
       </div>
     </div>`;
   }).join('');
@@ -1125,7 +1481,6 @@ function renderTimeline() {
       data: c.chegada, hora: '', tipo: 'transporte',
       titulo: `Chegada em ${c.nome}`, sub: ''
     });
-    // chegada (só 1ª cidade)
     c.transporte.forEach(t => {
       if (t.data) {
         const [dataStr, hora] = t.data.split(' ');
@@ -1133,7 +1488,6 @@ function renderTimeline() {
           titulo: `🛫 Chegada — ${t.tipo} ${t.empresa || ''}`, sub: `Em ${c.nome}` });
       }
     });
-    // conexão (2ª em diante)
     if (c.conexao && c.conexao.data) {
       const [dataStr, hora] = c.conexao.data.split(' ');
       eventos.push({ data: dataStr, hora: hora || '', tipo: 'conexao',
@@ -1148,7 +1502,6 @@ function renderTimeline() {
       if (l.data) eventos.push({ data: l.data, hora: l.hora || '', tipo: 'local',
         titulo: l.nome, sub: `${c.nome} • ${l.cat}` });
     });
-    // volta (última cidade)
     if (c.volta && c.volta.data) {
       const [dataStr, hora] = c.volta.data.split(' ');
       eventos.push({
@@ -1198,7 +1551,7 @@ function renderBagagem() {
       <strong style="color:#667eea;font-size:0.9em;">${cat}</strong>
       ${itens.map(it => `
         <div class="bagagem-item ${it.done ? 'done' : ''}">
-          <input type="checkbox" ${it.done ? 'checked' : ''} onchange="toggleBagagem(${it.idx})">
+          <input type="checkbox" ${it.done ? 'checked' : ''} ${modoEdicao ? `onchange="toggleBagagem(${it.idx})"` : 'disabled'} >
           <label>${it.item}</label>
         </div>`).join('')}
     </div>`).join('');
@@ -1236,11 +1589,15 @@ function renderOrcamento() {
 }
 
 let dragIdx = null;
-function onDragStart(e, idx) { salvarRascunhos(); dragIdx = idx; e.currentTarget.classList.add('dragging'); }
-function onDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragStart(e, idx) {
+  if (!modoEdicao) { e.preventDefault(); return; }
+  salvarRascunhos(); dragIdx = idx; e.currentTarget.classList.add('dragging');
+}
+function onDragOver(e) { if (!modoEdicao) return; e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
 function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 function onDrop(e, idx) {
   e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  if (!modoEdicao) return;
   if (dragIdx !== null && dragIdx !== idx) moverCidade(dragIdx, idx);
   dragIdx = null;
 }
@@ -1271,7 +1628,6 @@ async function exportarPDF() {
     pdf.text(`${i+1}. ${c.nome}  (${c.chegada || '?'} → ${c.saida || '?'})`, margin + 3, y + 6);
     y += 14; pdf.setTextColor(0, 0, 0);
 
-    // Conexão (2ª em diante)
     if (i > 0 && c.conexao) {
       checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
       pdf.setTextColor(230, 81, 0);
@@ -1289,7 +1645,6 @@ async function exportarPDF() {
       }
     }
 
-    // Chegada (1ª cidade)
     if (i === 0 && c.transporte.length) {
       checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
       pdf.text('Chegada:', margin + 3, y); y += 5;
@@ -1303,7 +1658,6 @@ async function exportarPDF() {
       });
     }
 
-    // Hotel
     if (c.hotel.length) {
       checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
       pdf.text('Hospedagem:', margin + 3, y); y += 5;
@@ -1315,7 +1669,6 @@ async function exportarPDF() {
       });
     }
 
-    // Locais
     if (c.locais.length) {
       checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
       pdf.text('Locais:', margin + 3, y); y += 5;
@@ -1327,7 +1680,6 @@ async function exportarPDF() {
       });
     }
 
-    // Volta (última cidade)
     if (i === estado.cidades.length - 1 && c.volta) {
       checkPage(8); pdf.setFontSize(10); pdf.setFont(undefined, 'bold');
       pdf.setTextColor(239, 68, 68);
@@ -1378,11 +1730,17 @@ async function exportarPDF() {
   pdf.save(`viagem-${destino.replace(/\s+/g, '-').toLowerCase()}.pdf`);
 }
 
-function atualizarTudo() { salvarRascunhos(); gerarBagagem(); render(); }
+function atualizarTudo() {
+  if (!modoEdicao) return;
+  salvarRascunhos();
+  gerarBagagem();
+  render();
+}
 
 document.getElementById('dataIda').addEventListener('change', calcDias);
 document.getElementById('dataVolta').addEventListener('change', calcDias);
 function calcDias() {
+  if (!modoEdicao) return;
   const ida = document.getElementById('dataIda').value;
   const volta = document.getElementById('dataVolta').value;
   if (ida && volta) {
@@ -1391,7 +1749,7 @@ function calcDias() {
   }
 }
 
-// ===================== PWA / SERVICE WORKER =====================
+// ===================== PWA =====================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(() => {});
